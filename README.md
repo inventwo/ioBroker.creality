@@ -57,8 +57,6 @@ Under `creality.<instance>.*` (examples):
 
 **Webcam note:** SPARKX uses WebRTC on port `8000`, not classic MJPEG. `webcam.streamUrl` points at the Creality viewer page — usable in a VIS iframe if the browser can reach the printer IP. For Home Assistant / go2rtc use `webcam.webrtcUrl`.
 
-Prototype reference used while developing: `scripts/iobroker-print-status.js`.
-
 ## Support
 
 
@@ -73,17 +71,8 @@ If you like our work and would like to support us, we appreciate any donation.
   ### **WORK IN PROGRESS**
 -->
 
-### **WORK IN PROGRESS**
-
-- (skvarel) Added Moonraker + Creality WebSocket adapter for SPARKX i7 / CFS
-- (skvarel) Added print status, temps, fans, CFS slots, and print controls
-- (skvarel) Added `info.model`, `info.firmware`, and `info.printHours`
-- (skvarel) Fixed adapter icon (`creality_icon.png`)
-- (skvarel) Added value list for `selfTestStep` (known phases)
-- (skvarel) Moved job-related states into `currentJob.*`
-- (skvarel) Added sleep mode, webcam on/off + stream URL, layers, speeds, disk/error info
-- (skvarel) Fixed webcam control: Creality `video` is read-only → `webcam.available`
-
+### 0.1.0
+- (skvarel) Initial release
 
 ## Older changes
 - [CHANGELOG_OLD.md](CHANGELOG_OLD.md)

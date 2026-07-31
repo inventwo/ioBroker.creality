@@ -1,5 +1,25 @@
 {
-	"creality adapter settings": "Налаштування адаптера для creality",
-	"option1": "варіант1",
-	"option2": "варіант2"
+	"apiKey": "Ключ API Moonraker",
+	"apiKey_help": "Додатково. Потрібен, лише якщо ввімкнено автентифікацію Moonraker.",
+	"connection_header": "Підключення принтера",
+	"creality adapter settings": "Налаштування адаптера для Creality",
+	"crealityWsPort": "Порт Creality WebSocket",
+	"crealityWsPort_help": "За замовчуванням 9999. Використовується для світлодіодного індикатора інструментальної головки, призупинення/відновлення/зупинки, вирівнювання/статусу самотестування та printLeftTime.",
+	"enableCfs": "CFS / філаментна коробка",
+	"enableCfs_help": "Створення каналу CFS, стану слота (T1A–T1D) і світлодіодного індикатора коробки CFS.",
+	"enableControl": "Елементи керування друком",
+	"enableControl_help": "Створення станів керування: світлодіод головки інструменту, режим сну, пауза, відновлення, зупинка.",
+	"enableFans": "Стани вболівальників",
+	"enableFans_help": "Створення відсотка вентиляторів / станів обертів.",
+	"features_header": "особливості",
+	"host": "Хост/IP принтера",
+	"host_help": "IP-адреса або ім’я хоста принтера Creality (наприклад, SPARKX i7).",
+	"moonrakerPort": "Порт HTTP Moonraker",
+	"moonrakerPort_help": "За замовчуванням 7125. Зворотний проксі Fluidd часто використовує 4408.",
+	"pollInterval": "Інтервал опитування (секунди)",
+	"pollInterval_help": "Як часто запитують Moonraker. Мінімум 2 секунди.",
+	"webcamPort": "Порт веб-камери",
+	"webcamPort_help": "За замовчуванням 8000 (засіб перегляду Creality WebRTC). Використовується, якщо не встановлено спеціальну URL-адресу потоку.",
+	"webcamStreamUrl": "Заміна URL-адреси веб-камери",
+	"webcamStreamUrl_help": "Додатково. Повна URL-адреса для VIS iframe (наприклад, http://192.168.x.x:8000). Порожньо = автоматично з Moonraker / порт за замовчуванням."
 }

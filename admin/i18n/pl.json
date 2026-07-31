@@ -1,5 +1,25 @@
 {
-	"creality adapter settings": "Ustawienia adaptera dla creality",
-	"option1": "opcja 1",
-	"option2": "opcja 2"
+	"apiKey": "Klucz API Moonrakera",
+	"apiKey_help": "Fakultatywny. Potrzebne tylko wtedy, gdy włączone jest uwierzytelnianie Moonraker.",
+	"connection_header": "Podłączenie drukarki",
+	"creality adapter settings": "Ustawienia adaptera dla Creality",
+	"crealityWsPort": "Port Creality WebSocket",
+	"crealityWsPort_help": "Wartość domyślna 9999. Używana do wskazywania diody LED głowicy narzędzia, pauzy/wznowienia/zatrzymania, stanu poziomowania/autotestu i czasu drukowaniaLeftTime.",
+	"enableCfs": "Pudełko CFS/filament",
+	"enableCfs_help": "Utwórz kanał CFS, stany gniazd (T1A – T1D) i diodę LED skrzynki CFS.",
+	"enableControl": "Kontrolki drukowania",
+	"enableControl_help": "Twórz stany kontrolne: dioda LED głowicy narzędziowej, tryb uśpienia, pauza, wznowienie, stop.",
+	"enableFans": "Stany fanów",
+	"enableFans_help": "Utwórz stan procentowy wentylatora/RPM.",
+	"features_header": "Cechy",
+	"host": "Host drukarki / adres IP",
+	"host_help": "Adres IP lub nazwa hosta drukarki Creality (np. SPARKX i7).",
+	"moonrakerPort": "Port HTTP Moonrakera",
+	"moonrakerPort_help": "Domyślnie 7125. Odwrotne proxy Fluidd często używa 4408.",
+	"pollInterval": "Interwał sondowania (sekundy)",
+	"pollInterval_help": "Jak często zadawane są zapytania dotyczące Moonrakera. Minimum 2 sekundy.",
+	"webcamPort": "Port kamery internetowej",
+	"webcamPort_help": "Domyślnie 8000 (przeglądarka Creality WebRTC). Używane, gdy nie ustawiono niestandardowego adresu URL strumienia.",
+	"webcamStreamUrl": "Zastąpienie adresu URL kamery internetowej",
+	"webcamStreamUrl_help": "Fakultatywny. Pełny adres URL ramki iframe VIS (np. http://192.168.x.x:8000). Pusty = auto z Moonrakera / portu domyślnego."
 }

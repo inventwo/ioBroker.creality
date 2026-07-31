@@ -1,6 +1,6 @@
 {
   "name": "iobroker.creality",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Creality 3D-Printer",
   "author": {
     "name": "skvarel",
@@ -14,6 +14,7 @@
   "homepage": "https://github.com/inventwo/ioBroker.creality",
   "license": "MIT",
   "keywords": [
+    "ioBroker",
     "creality",
     "3D",
     "Printer"
@@ -23,7 +24,7 @@
     "url": "https://github.com/inventwo/ioBroker.creality.git"
   },
   "engines": {
-    "node": ">= 20"
+    "node": ">= 22"
   },
   "dependencies": {
     "@iobroker/adapter-core": "^3.4.3",

@@ -1,5 +1,25 @@
 {
-	"creality adapter settings": "Adapterinstellingen voor creality",
-	"option1": "optie1",
-	"option2": "optie2"
+	"apiKey": "Moonraker API-sleutel",
+	"apiKey_help": "Optioneel. Alleen nodig als Moonraker-authenticatie is ingeschakeld.",
+	"connection_header": "Printeraansluiting",
+	"creality adapter settings": "Adapterinstellingen voor Creality",
+	"crealityWsPort": "Creality WebSocket-poort",
+	"crealityWsPort_help": "Standaard 9999. Gebruikt voor toolhead-LED, pauzeren/hervatten/stoppen, nivellering/zelfteststatus en printLeftTime.",
+	"enableCfs": "CFS / filamentdoos",
+	"enableCfs_help": "Creëer CFS-kanaal, slotstatussen (T1A–T1D) en CFS-box-LED.",
+	"enableControl": "Afdrukbedieningen",
+	"enableControl_help": "Creëer controlestatussen: toolhead-LED, slaapmodus, pauzeren, hervatten, stoppen.",
+	"enableFans": "Fan staten",
+	"enableFans_help": "Creëer ventilatorpercentage / RPM-statussen.",
+	"features_header": "Functies",
+	"host": "Printerhost/IP",
+	"host_help": "IP-adres of hostnaam van de Creality-printer (bijvoorbeeld SPARKX i7).",
+	"moonrakerPort": "Moonraker HTTP-poort",
+	"moonrakerPort_help": "Standaard 7125. Fluidd reverse proxy gebruikt vaak 4408.",
+	"pollInterval": "Poll-interval (seconden)",
+	"pollInterval_help": "Hoe vaak wordt Moonraker ondervraagd. Minimaal 2 seconden.",
+	"webcamPort": "Webcam-poort",
+	"webcamPort_help": "Standaard 8000 (Creality WebRTC-viewer). Wordt gebruikt als er geen aangepaste stream-URL is ingesteld.",
+	"webcamStreamUrl": "Webcam-URL overschrijven",
+	"webcamStreamUrl_help": "Optioneel. Volledige URL voor VIS iframe (bijvoorbeeld http://192.168.x.x:8000). Leeg = automatisch van Moonraker / standaardpoort."
 }

@@ -1,5 +1,25 @@
 {
-	"creality adapter settings": "creality的适配器设置",
-	"option1": "选项1",
-	"option2": "选项2"
+	"apiKey": "Moonraker API 密钥",
+	"apiKey_help": "选修的。仅当启用 Moonraker 身份验证时才需要。",
+	"connection_header": "打印机连接",
+	"creality adapter settings": "Creality 的适配器设置",
+	"crealityWsPort": "Creality WebSocket 端口",
+	"crealityWsPort_help": "默认 9999。用于工具头 LED、暂停/恢复/停止、调平/自检状态和 printLeftTime。",
+	"enableCfs": "CFS/灯丝盒",
+	"enableCfs_help": "创建 CFS 通道、插槽状态 (T1A–T1D) 和 CFS 盒 LED。",
+	"enableControl": "打印控件",
+	"enableControl_help": "创建控制状态：工具头 LED、睡眠模式、暂停、恢复、停止。",
+	"enableFans": "范州",
+	"enableFans_help": "创建风扇百分比/RPM 状态。",
+	"features_header": "特征",
+	"host": "打印机主机/IP",
+	"host_help": "Creality 打印机的 IP 地址或主机名（例如 SPARKX i7）。",
+	"moonrakerPort": "Moonraker HTTP 端口",
+	"moonrakerPort_help": "默认 7125。Fluidd 反向代理通常使用 4408。",
+	"pollInterval": "轮询间隔（秒）",
+	"pollInterval_help": "Moonraker 被查询的频率。至少 2 秒。",
+	"webcamPort": "网络摄像头端口",
+	"webcamPort_help": "默认 8000（Creality WebRTC 查看器）。当未设置自定义流 URL 时使用。",
+	"webcamStreamUrl": "网络摄像头 URL 覆盖",
+	"webcamStreamUrl_help": "选修的。 VIS iframe 的完整 URL（例如 http://192.168.x.x:8000）。空 = 来自 Moonraker 的自动/默认端口。"
 }

@@ -2,7 +2,7 @@
 
 /*
  * Created with @iobroker/create-adapter v3.1.5
- * Logic ported from scripts/iobroker-print-status.js (SPARKX i7 / Moonraker + Creality WS)
+ * Creality SPARKX i7 / Moonraker + Creality WebSocket
  */
 
 const utils = require('@iobroker/adapter-core');
@@ -80,6 +80,8 @@ class Creality extends utils.Adapter {
 			host,
 			port: crealityWsPort,
 			log: this.log,
+			setTimeout: (...args) => this.setTimeout(...args),
+			clearTimeout: id => this.clearTimeout(id),
 		});
 		this.crealityWs.on('telem', () => {
 			this.publishUiState(null);
@@ -198,7 +200,7 @@ class Creality extends utils.Adapter {
 	/**
 	 * @param {string} id
 	 * @param {any} init
-	 * @param {ioBroker.StateCommon} common
+	 * @param {Partial<ioBroker.StateCommon> & {name?: ioBroker.StringOrTranslated, type?: ioBroker.CommonType}} common
 	 */
 	async ensureState(id, init, common) {
 		const existing = await this.getObjectAsync(id);
@@ -590,7 +592,8 @@ class Creality extends utils.Adapter {
 	 * @param {unknown} err
 	 */
 	logMoonrakerUnreachable(err) {
-		const msg = err && err.message ? err.message : String(err);
+		const errObj = /** @type {{message?: string}|null|undefined} */ (err);
+		const msg = errObj && errObj.message ? errObj.message : String(err);
 		if (isUnreachableError(err)) {
 			if (this.moonrakerReachable) {
 				this.log.info(`Moonraker unreachable: ${msg}`);
@@ -627,6 +630,17 @@ class Creality extends utils.Adapter {
 			const eFan = st['output_pin e_fan'] || {};
 			const hotendFan = st['heater_fan hotend_fan'] || {};
 
+			/** @type {{
+			 *   type: string,
+			 *   state: string,
+			 *   enable: boolean,
+			 *   temperature: number|null,
+			 *   humidity: number|null,
+			 *   activeSlot: string,
+			 *   activeColor: string,
+			 *   activeMaterial: string,
+			 *   slots: Record<string, any>,
+			 * }} */
 			let cfs = {
 				type: '',
 				state: '',
