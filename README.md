@@ -51,7 +51,7 @@ Under `creality.<instance>.*` (examples):
 | `temp.*` | Nozzle, bed, box/chamber |
 | `fans.*` / `cfs.*` | Fans / CFS (optional) |
 | `control.light` / `sleepMode` / `pause` / `resume` / `stop` | Controls |
-| `webcam.on` | Webcam on/off |
+| `webcam.available` | Camera present (read-only; local API cannot power it off on SPARKX i7) |
 | `webcam.streamUrl` | URL for VIS iframe (Creality WebRTC page, default `http://<host>:8000`) |
 | `webcam.webrtcUrl` | WebRTC signaling endpoint |
 
@@ -82,6 +82,7 @@ If you like our work and would like to support us, we appreciate any donation.
 - (skvarel) Added value list for `selfTestStep` (known phases)
 - (skvarel) Moved job-related states into `currentJob.*`
 - (skvarel) Added sleep mode, webcam on/off + stream URL, layers, speeds, disk/error info
+- (skvarel) Fixed webcam control: Creality `video` is read-only → `webcam.available`
 
 
 ## Older changes

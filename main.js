@@ -91,7 +91,6 @@ class Creality extends utils.Adapter {
 
 		if (this.config.enableControl !== false) {
 			this.subscribeStates('control.*');
-			this.subscribeStates('webcam.on');
 			if (this.config.enableCfs !== false) {
 				this.subscribeStates('cfs.light');
 			}
@@ -148,12 +147,6 @@ class Creality extends utils.Adapter {
 				await this.crealityWs?.set({ sleepMode: state.val ? 1 : 0 });
 				await this.setStateAsync('control.sleepMode', !!state.val, true);
 				this.log.info(`Sleep mode → ${state.val ? 'ON' : 'OFF'}`);
-				return;
-			}
-			if (shortId === 'webcam.on') {
-				await this.crealityWs?.set({ video: state.val ? 1 : 0 });
-				await this.setStateAsync('webcam.on', !!state.val, true);
-				this.log.info(`Webcam → ${state.val ? 'ON' : 'OFF'}`);
 				return;
 			}
 			if (shortId === 'cfs.light') {
@@ -377,11 +370,10 @@ class Creality extends utils.Adapter {
 		}
 
 		await this.ensureChannel('webcam', 'Webcam');
-		await this.ensureState('webcam.on', false, {
-			name: 'Webcam on/off',
+		await this.ensureState('webcam.available', false, {
+			name: 'Webcam available (read-only)',
 			type: 'boolean',
-			write: true,
-			role: 'switch',
+			role: 'indicator',
 		});
 		await this.ensureState('webcam.streamUrl', '', {
 			name: 'Webcam page / stream URL (iframe)',
@@ -393,6 +385,11 @@ class Creality extends utils.Adapter {
 			type: 'string',
 			role: 'text.url',
 		});
+		try {
+			await this.delObjectAsync('webcam.on');
+		} catch {
+			// ignore
+		}
 
 		if (this.config.enableControl !== false) {
 			await this.ensureChannel('control', 'Control');
@@ -483,7 +480,7 @@ class Creality extends utils.Adapter {
 			}
 		}
 		if (ct.video !== undefined) {
-			this.setState('webcam.on', Number(ct.video) > 0, true);
+			this.setState('webcam.available', Number(ct.video) > 0, true);
 		}
 	}
 
