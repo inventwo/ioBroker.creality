@@ -51,7 +51,7 @@ Under `creality.<instance>.*` (examples):
 | `info.printHours` | Total print hours (`h`) |
 | `state` | UI print state (`printing`, `leveling`, `self-testing`, …) |
 | `stateKlipper` | Raw Moonraker / Klipper `print_stats.state` |
-| `selfTestStep` | Creality self-test step (e.g. `5` = leveling) |
+| `selfTestStep` | Creality self-test phase (`0` idle, `5` leveling; other numbers = unknown phase) |
 | `progress` | Progress % |
 | `printName` | Print file name |
 | `remainingText` / `finishAt` | Remaining / finish time |
@@ -83,6 +83,7 @@ If you like our work and would like to support us, we appreciate any donation.
 - (skvarel) Added print status, temps, fans, CFS slots, and print controls
 - (skvarel) Added `info.model`, `info.firmware`, and `info.printHours`
 - (skvarel) Fixed adapter icon (`creality_icon.png`)
+- (skvarel) Added value list for `selfTestStep` (known phases)
 
 
 ## Older changes

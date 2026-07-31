@@ -10,6 +10,7 @@ const { MoonrakerClient } = require('./lib/moonraker');
 const { CrealityWsClient } = require('./lib/crealityWs');
 const {
 	CFS_SLOTS,
+	SELF_TEST_STEP_STATES,
 	isUnreachableError,
 	formatHms,
 	formatFinishAt,
@@ -194,19 +195,38 @@ class Creality extends utils.Adapter {
 	 * @param {ioBroker.StateCommon} common
 	 */
 	async ensureState(id, init, common) {
-		await this.setObjectNotExistsAsync(id, {
-			type: 'state',
-			common: {
-				read: true,
-				write: false,
-				role: common.role || (common.type === 'boolean' ? 'indicator' : 'value'),
-				...common,
-			},
-			native: {},
-		});
-		const cur = await this.getStateAsync(id);
-		if (cur === null || cur === undefined) {
-			await this.setStateAsync(id, { val: init, ack: true });
+		const existing = await this.getObjectAsync(id);
+		const fullCommon = {
+			read: true,
+			write: false,
+			role: common.role || (common.type === 'boolean' ? 'indicator' : 'value'),
+			...common,
+		};
+		if (!existing) {
+			await this.setObjectNotExistsAsync(id, {
+				type: 'state',
+				common: fullCommon,
+				native: {},
+			});
+			const cur = await this.getStateAsync(id);
+			if (cur === null || cur === undefined) {
+				await this.setStateAsync(id, { val: init, ack: true });
+			}
+			return;
+		}
+		// Refresh name / states / unit when definitions change
+		const patch = {};
+		if (common.name && existing.common && existing.common.name !== common.name) {
+			patch.name = common.name;
+		}
+		if (common.states) {
+			patch.states = common.states;
+		}
+		if (common.unit !== undefined && existing.common && existing.common.unit !== common.unit) {
+			patch.unit = common.unit;
+		}
+		if (Object.keys(patch).length) {
+			await this.extendObjectAsync(id, { common: patch });
 		}
 	}
 
@@ -231,7 +251,7 @@ class Creality extends utils.Adapter {
 		const root = [
 			['state', '', { name: 'Print status (UI)', type: 'string' }],
 			['stateKlipper', '', { name: 'Print status (Klipper/Moonraker)', type: 'string' }],
-			['selfTestStep', 0, { name: 'Self-test step', type: 'number' }],
+			['selfTestStep', 0, { name: 'Self-test step', type: 'number', states: SELF_TEST_STEP_STATES }],
 			['progress', 0, { name: 'Progress %', type: 'number', unit: '%' }],
 			['printName', '', { name: 'Print file', type: 'string' }],
 			['remainingText', '00:00:00', { name: 'Remaining time', type: 'string' }],
