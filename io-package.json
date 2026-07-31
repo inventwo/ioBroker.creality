@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "creality",
-    "version": "0.1.1",
+    "version": "0.1.2",
     "news": {
+      "0.1.2": {
+        "en": "Fixed TypeScript conflict\nFixed ESLint scanning local `backup/` folder\nModified Dependabot to ignore TypeScript major updates",
+        "de": "Fixed TypeScript Konflikt\nFix ESLint scannt lokalen `Backup/`-Ordner\nModifiziertes Dependabot zu ignorieren TypeScript große Updates",
+        "ru": "Конфликт TypeScript\nИсправленная ESLint сканирующая локальную папку «backup/»\nМодифицированный Dependabot проигнорирует основные обновления TypeScript",
+        "pt": "Conflito do tipo fixoScript\nPasta local de 'backup/' do ESLint fixo\nDependabot modificado para ignorar as principais atualizações do TypeScript",
+        "nl": "Fixed TypeScript conflict\nVaste ESLint scannen van lokale map voor back-ups/\nAangepaste dependabot om belangrijke updates van TypeScript te negeren",
+        "fr": "Correction du conflit TypeScript\nCorrection du dossier local `backup/` de numérisation ESLint\nModifié Dependabot pour ignorer les mises à jour majeures de TypeScript",
+        "it": "Risolto conflitto TypeScript\nRisolto ESLint scansione locale `backup/` cartella\nModificato Dependabot per ignorare gli aggiornamenti principali di TypeScript",
+        "es": "Conflicto tipo script fijo\nEscaneo fijo ESLint local `backup/` carpeta\nDependabot modificado para ignorar las actualizaciones principales de TipoScript",
+        "pl": "Naprawiono konflikt TypeScript\nNaprawiono skanowanie ESLint lokalnego folderu 'backup /'\nZmodyfikowany Dependabot ignoruje główne aktualizacje TypeScript",
+        "uk": "Виправлений конфлікт TypeScript\nВиправлено ESLint сканування локальної папки `backup/`\nМодифікований залежно від того, щоб ігнорувати TypeScript основні оновлення",
+        "zh-cn": "固定类型脚本冲突\n固定的 ESLint 扫描本地“ 备份/” 文件夹\n已修改的依赖以忽略 TypeScript 主要更新"
+      },
       "0.1.1": {
         "en": "Added forum link",
         "de": "Forum Link hinzugefügt",

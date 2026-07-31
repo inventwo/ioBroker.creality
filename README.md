@@ -70,7 +70,7 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
   ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.2 (2026-07-31)
 - (skvarel) Fixed TypeScript conflict
 - (skvarel) Fixed ESLint scanning local `backup/` folder
 - (skvarel) Modified Dependabot to ignore TypeScript major updates

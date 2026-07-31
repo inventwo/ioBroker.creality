@@ -1,6 +1,6 @@
 {
   "name": "iobroker.creality",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Creality 3D-Printer",
   "author": {
     "name": "skvarel",
