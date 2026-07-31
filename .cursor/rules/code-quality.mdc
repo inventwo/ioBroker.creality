@@ -1,0 +1,60 @@
+---
+description: ioBroker adapter code quality and JavaScript conventions
+globs: main.js,lib/**,scripts/**,eslint.config.mjs,prettier.config.mjs
+alwaysApply: false
+---
+
+# Code Quality
+
+## Style
+
+- Prefer simple, robust JavaScript — no build step for runtime code
+- async/await for asynchronous operations
+- JSDoc on public methods where helpful
+- Use `this.log.*` in adapter code — never `console.log` in production adapter code
+- Prototype script may use `log()` (javascript adapter API)
+- Tabs, double quotes (match inventwo `prettier.config.mjs` when scaffold exists)
+- ESLint via `@iobroker/eslint-config` — run `npm run lint` after every change
+
+## Resource cleanup
+
+Clear timers and close WebSockets in `onUnload()`; always call `callback()`:
+
+```javascript
+onUnload(callback) {
+	try {
+		if (this.pollTimer) {
+			this.clearInterval(this.pollTimer);
+			this.pollTimer = null;
+		}
+		if (this.crealityWs) {
+			this.crealityWs.close();
+			this.crealityWs = null;
+		}
+		callback();
+	} catch (error) {
+		this.log.error(`Error during unload: ${error.message}`);
+		callback();
+	}
+}
+```
+
+## Error handling
+
+- Wrap async/API work in try/catch; log errors, do not crash the adapter
+- Network failures: set `info.connection` / `online` false; wait for next poll
+- Do not retry failed HTTP/WS calls in a tight loop
+- **Printer powered off** (`EHOSTUNREACH`, `ECONNREFUSED`, `Timeout`, …): log **once** at **info**, not warn; log **once** at info when reachable again. Do not flood the log every poll cycle.
+
+## HTTP / WS
+
+- **Preferred:** native `node:http` / `node:https`
+- **Avoid:** axios, request
+- Creality control API: WebSocket `ws://host:9999/` JSON `{ "method": "set", "params": { … } }`
+- Moonraker: HTTP `http://host:7125/…` (and G-code via `/printer/gcode/script`)
+
+## Dependencies
+
+- Node.js >= 22
+- `@iobroker/adapter-core`; avoid unnecessary dependencies
+- Prefer built-in Node modules (`WebSocket` on Node 22+)

@@ -1,0 +1,26 @@
+---
+description: Testing with @iobroker/testing and Mocha
+globs: test/**,*.test.js
+alwaysApply: false
+---
+
+# Testing
+
+Use **only** `@iobroker/testing` for integration tests.
+
+## Scripts (after scaffold)
+
+- `npm run test` — unit + package validation
+- `npm run test:js` — Mocha unit tests
+- `npm run test:package` — package / io-package / admin JSON
+- `npm run test:integration` — local only
+
+## Rules
+
+- Mock Moonraker HTTP and Creality WS in unit tests — never hit a live printer in CI
+- Configure harness via `harness.objects.setObject()` before start
+- Plan sufficient timeouts for async start
+
+## CI order
+
+Lint first (`check-and-lint`), then `adapter-tests`.

@@ -1,0 +1,35 @@
+---
+description: README, changelog, and release workflow
+globs: README.md,io-package.json,CHANGELOG_OLD.md,docs/**
+alwaysApply: false
+---
+
+# Documentation & Releases
+
+## README (English only — ioBroker requirement)
+
+Required sections: Installation, Configuration, Usage / Data Points, Changelog, License, Support.
+
+- Document **two APIs**: Moonraker + Creality WS
+- State clearly: **tested with SPARKX i7**; other models best-effort
+- Reference prototype: `scripts/iobroker-print-status.js`
+
+## Changelog format
+
+```markdown
+### **WORK IN PROGRESS**
+
+- (skvarel) Added pause, resume, and stop controls via Creality WebSocket
+```
+
+Verbs: **Added**, **Fixed**, **Modified**, **Replaced**, **Removed**.
+
+- No bold tags like `**FIXED**` (breaks news translation)
+- Do **not** edit `CHANGELOG_OLD.md` manually
+- Releases: `npm run release-patch|minor|major`
+
+## io-package.json
+
+- Keep `common.version` in sync with `package.json`
+- New options → `native` with defaults
+- Suggest `common.type`: `hardware` (or `misc` if preferred at create-adapter time)

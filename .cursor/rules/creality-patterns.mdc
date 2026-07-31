@@ -1,0 +1,48 @@
+---
+description: Creality / SPARKX API and state-tree conventions
+globs: main.js,lib/**,scripts/**
+alwaysApply: false
+---
+
+# Creality patterns
+
+## Dual connectivity
+
+| Channel | Port | Use for |
+|---------|------|---------|
+| Moonraker HTTP | `7125` (fallback try `4408`) | Status, progress, temps, fans, CFS inventory, G-code (`LED_SWITCH` = CFS box LED) |
+| Creality WS | `9999` | `lightSw` (toolhead LED), `pause` 0/1, `stop` 1 |
+
+Heartbeats on Creality WS may send `ModeCode: heart_beat` — reply with literal `"ok"`.
+
+## Curated state tree (do not dump all Klipper objects)
+
+```
+creality.0.
+  info.connection / online
+  info.model, firmware, …          (adapter v1+)
+  state, stateKlipper, selfTestStep
+  currentJob.progress, printName, remainingText, finishAt
+  currentJob.filamentSlot, filamentMaterial, filamentColor   (active)
+  temp.nozzleTemp|nozzleTarget|bedTemp|bedTarget
+  fans.partCooling|partCoolingRpm|hotend|board|aux
+  cfs.type|state|enable|temperature|humidity|light
+  cfs.T1A|T1B|T1C|T1D .color|material|occupied|active
+  control.light|pause|resume|stop
+```
+
+- `printNameShort`: truncate before first `.STL` / `.stl`
+- Filament colors: Creality often sends `0RRGGBB` → normalize to `#RRGGBB`
+- Active CFS slot: prefer `filament_inventory_manager.active_tnn` (e.g. `T1C`)
+
+## Controls
+
+- `control.light` → Creality WS `{ lightSw: 0|1 }` (toolhead)
+- `cfs.light` → Moonraker G-code `LED_SWITCH SWITCH=0|1` (CFS box)
+- `control.pause` / `resume` / `stop` → buttons (pulse true → action → reset false)
+  - pause: `{ pause: 1 }`, resume: `{ pause: 0 }`, stop: `{ stop: 1 }`
+  - Fallback: Moonraker `PAUSE` / `RESUME` / `CANCEL_PRINT`
+
+## Source of truth for behavior
+
+Port logic from `scripts/iobroker-print-status.js` into `lib/` modules (e.g. `moonraker.js`, `crealityWs.js`, `cfs.js`) when scaffolding the adapter.
