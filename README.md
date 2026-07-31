@@ -70,6 +70,14 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
   ### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (skvarel) Fixed deploy CI to use Node.js 24
+- (skvarel) Fixed admin jsonConfig indentation
+- (skvarel) Modified Dependabot auto-merge to the new ioBroker workflow/action
+- (skvarel) Modified Dependabot schedule to cron
+- (skvarel) Modified TypeScript tooling to Node 22 (`@tsconfig/node22`, `@types/node`)
+- (skvarel) Added Cursor rules to the repository
+
 ### 0.1.2 (2026-07-31)
 - (skvarel) Fixed TypeScript conflict
 - (skvarel) Fixed ESLint scanning local `backup/` folder

@@ -128,7 +128,7 @@
 		},
 		"enableFans": {
 			"type": "checkbox",
-			 "label": "enableFans",
+			"label": "enableFans",
 			"help": "enableFans_help",
 			"newLine": false,
 			"default": true,
