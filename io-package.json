@@ -18,17 +18,17 @@
 			}
 		},
 		"titleLang": {
-			"en": "Creality",
-			"de": "Creality",
+			"en": "Creality 3D printers integration",
+			"de": "Creality 3D Drucker Integration",
 			"ru": "Creality",
-			"pt": "Creality",
-			"nl": "Creality",
-			"fr": "Creality",
-			"it": "Creality",
-			"es": "Creality",
-			"pl": "Creality",
-			"uk": "Creality",
-			"zh-cn": "Creality"
+			"pt": "Integração de impressoras 3D Creality",
+			"nl": "Creality 3D printers integratie",
+			"fr": "Intégration des imprimantes 3D Creality",
+			"it": "Integrazione delle stampanti 3D Creality",
+			"es": "Integración de impresoras 3D Creality",
+			"pl": "Integracja drukarek 3D Creality",
+			"uk": "Інтеграція 3D-принтерів Creality",
+			"zh-cn": "Creality 3D 打印机集成"
 		},
 		"desc": {
 			"en": "Creality 3D printers (Moonraker + Creality WebSocket)",
