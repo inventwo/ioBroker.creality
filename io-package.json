@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "creality",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "news": {
+      "0.1.3": {
+        "en": "Fixed deploy CI to use Node.js 24\nFixed admin jsonConfig indentation\nModified Dependabot auto-merge to the new ioBroker workflow/action\nModified Dependabot schedule to cron\nModified TypeScript tooling to Node 22\nAdded Cursor rules to the repository",
+        "de": "Fixe Bereitstellungs-CI für Node.js 24\nFixed admin jsonConfig indentation\nModifiziertes Dependabot Auto-Merge zum neuen ioBroker Workflow/Aktion\nModifizierter Dependabot-Zeitplan für cron\nModifizierte TypeScript-Tools für Node 22\nCursorregeln zum Repository hinzugefügt",
+        "ru": "Фиксированное развертывание CI для использования Node.js 24\nОбсуждение admin jsonConfig\nАвтоматическое слияние с новым рабочим процессом / действием ioBroker\nМодифицированное расписание Dependabot\nМодифицированный инструментарий TypeScript для Node 22\nДобавлены правила Cursor в репозиторий",
+        "pt": "Implante fixo CI para usar Node.js 24\nIndentação fixa do administrador jsonConfig\nAuto- fusão de Dependabot modificada para o novo fluxo de trabalho/ação do ioBroker\nProgramação modificada do Dependabot para o cron\nTipo modificadoScript tooling to Node 22\nAdicionadas as regras do cursor ao repositório",
+        "nl": "Vaste inzet CI om Node.js 24 te gebruiken\nVaste admin jsonConfig inspringen\nGemodificeerd Dependabot automatisch samenvoegen naar de nieuwe ioBroker workflow/action\nVeranderde dependabot schema naar cron\nGemodificeerd typeScript gereedschap naar knoop 22\nCursorregels toegevoegd aan de repository",
+        "fr": "CI de déploiement fixe pour utiliser Node.js 24\nCorrection de l'indentation admin jsonConfig\nModification du flux de travail/action de Dependabot\nCalendrier modifié de Dependabot à cron\nModification de l'outil TypeScript vers Node 22\nAjout de règles de curseur au dépôt",
+        "it": "Risolto schieramento CI per usare Node.js 24\nRisolto jsonConfig indentazione\nAutomatizzato Dependabot per il nuovo flusso di lavoro ioBroker/azione\nProgramma di Dependabot modificato per cron\nStrumenti di tipo script modificati a Node 22\nAggiunte regole Cursor al repository",
+        "es": "Implementación fija CI para utilizar Node.js 24\nAdministración fija jsonConfig indentation\nModificado Dependabot auto-merge al nuevo ioBroker flujo de trabajo / acción\nModificado horario Dependabot para cron\nHerramientas de tipoScript modificadas para Nodo 22\nAñadido reglas de cursor al repositorio",
+        "pl": "Stałe uruchomienie CI do korzystania z Node.js 24\nNaprawiono wcięcie admin jsonConfig\nZmodyfikowane automatyczne połączenie Dependabot z nowym obiegiem pracy / działaniem joBrokera\nZmodyfikowany schemat dawkowania leku Dependabot do cron\nZmodyfikowane narzędzie TypeScript do węzła 22\nDodano zasady kursora do repozytorium",
+        "uk": "Виправлено розгортання CI для використання Node.js 24\nВиправлено помилку адміністратора\nМодифікована автозахоплення залежно від нового ioBroker\nМодифікований графік залежно від корони\nМодифікований інструмент TypeScript для Node 22\nДодано правила оформлення до репозиторій",
+        "zh-cn": "使用节点的固定部署 CI 24\n固定管理员json 缩进\n适应新的ioBroker工作流程/行动\n已修改的依附时间表\n修改类型脚本工具到节点 22\n添加光标规则到仓库"
+      },
       "0.1.2": {
         "en": "Fixed TypeScript conflict\nFixed ESLint scanning local `backup/` folder\nModified Dependabot to ignore TypeScript major updates",
         "de": "Fixed TypeScript Konflikt\nFix ESLint scannt lokalen `Backup/`-Ordner\nModifiziertes Dependabot zu ignorieren TypeScript große Updates",

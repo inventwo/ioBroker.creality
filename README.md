@@ -70,7 +70,7 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
   ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.3 (2026-07-31)
 - (skvarel) Fixed deploy CI to use Node.js 24
 - (skvarel) Fixed admin jsonConfig indentation
 - (skvarel) Modified Dependabot auto-merge to the new ioBroker workflow/action
