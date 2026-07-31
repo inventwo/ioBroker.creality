@@ -252,6 +252,13 @@ class Creality extends utils.Adapter {
 			['state', '', { name: 'Print status (UI)', type: 'string' }],
 			['stateKlipper', '', { name: 'Print status (Klipper/Moonraker)', type: 'string' }],
 			['selfTestStep', 0, { name: 'Self-test step', type: 'number', states: SELF_TEST_STEP_STATES }],
+		];
+		for (const [id, init, common] of root) {
+			await this.ensureState(id, init, common);
+		}
+
+		await this.ensureChannel('currentJob', 'Current print job');
+		for (const [id, init, common] of [
 			['progress', 0, { name: 'Progress %', type: 'number', unit: '%' }],
 			['printName', '', { name: 'Print file', type: 'string' }],
 			['remainingText', '00:00:00', { name: 'Remaining time', type: 'string' }],
@@ -259,9 +266,26 @@ class Creality extends utils.Adapter {
 			['filamentSlot', '', { name: 'Active filament slot', type: 'string' }],
 			['filamentMaterial', '', { name: 'Active filament material', type: 'string' }],
 			['filamentColor', '', { name: 'Active filament color', type: 'string' }],
-		];
-		for (const [id, init, common] of root) {
-			await this.ensureState(id, init, common);
+		]) {
+			await this.ensureState(`currentJob.${id}`, init, /** @type {ioBroker.StateCommon} */ (common));
+		}
+
+		// Remove legacy root states moved into currentJob
+		for (const id of [
+			'progress',
+			'printName',
+			'remainingText',
+			'finishAt',
+			'filamentSlot',
+			'filamentMaterial',
+			'filamentColor',
+			'printNameShort',
+		]) {
+			try {
+				await this.delObjectAsync(id);
+			} catch {
+				// ignore
+			}
 		}
 
 		await this.ensureChannel('temp', 'Temperatures');
@@ -366,7 +390,7 @@ class Creality extends utils.Adapter {
 		if (!Number.isFinite(progress) || progress < 0) {
 			return;
 		}
-		this.setState('progress', Math.round(progress * 10) / 10, true);
+		this.setState('currentJob.progress', Math.round(progress * 10) / 10, true);
 
 		let remainingSec = Number(ct.printLeftTime);
 		if (!Number.isFinite(remainingSec) || remainingSec < 0) {
@@ -374,12 +398,12 @@ class Creality extends utils.Adapter {
 		}
 		const ui = mapUiState(this.lastKlipperState, ct);
 		if (ui === 'printing' || ui === 'paused' || ui === 'leveling' || ui === 'self-testing' || ui === 'preparing') {
-			this.setState('remainingText', formatHms(remainingSec), true);
-			this.setState('finishAt', formatFinishAt(remainingSec), true);
+			this.setState('currentJob.remainingText', formatHms(remainingSec), true);
+			this.setState('currentJob.finishAt', formatFinishAt(remainingSec), true);
 		}
 		const fname = ct.printFileName ? String(ct.printFileName) : '';
 		if (fname) {
-			this.setState('printName', rawName(fname), true);
+			this.setState('currentJob.printName', rawName(fname), true);
 		}
 	}
 
@@ -499,10 +523,10 @@ class Creality extends utils.Adapter {
 			await this.setStateAsync('info.connection', true, true);
 			this.logMoonrakerReachableAgain();
 			this.publishUiState(state);
-			await this.setStateAsync('progress', progress, true);
-			await this.setStateAsync('printName', rawName(filename), true);
-			await this.setStateAsync('remainingText', formatHms(remainingSec), true);
-			await this.setStateAsync('finishAt', formatFinishAt(remainingSec), true);
+			await this.setStateAsync('currentJob.progress', progress, true);
+			await this.setStateAsync('currentJob.printName', rawName(filename), true);
+			await this.setStateAsync('currentJob.remainingText', formatHms(remainingSec), true);
+			await this.setStateAsync('currentJob.finishAt', formatFinishAt(remainingSec), true);
 
 			await this.setStateAsync('temp.nozzleTemp', round1(ex.temperature), true);
 			await this.setStateAsync('temp.nozzleTarget', round1(ex.target), true);
@@ -517,9 +541,9 @@ class Creality extends utils.Adapter {
 				await this.setStateAsync('fans.aux', pinToPercent(eFan.value), true);
 			}
 
-			await this.setStateAsync('filamentSlot', cfs.activeSlot, true);
-			await this.setStateAsync('filamentMaterial', cfs.activeMaterial, true);
-			await this.setStateAsync('filamentColor', cfs.activeColor, true);
+			await this.setStateAsync('currentJob.filamentSlot', cfs.activeSlot, true);
+			await this.setStateAsync('currentJob.filamentMaterial', cfs.activeMaterial, true);
+			await this.setStateAsync('currentJob.filamentColor', cfs.activeColor, true);
 
 			if (this.config.enableCfs !== false) {
 				await this.setStateAsync('cfs.type', cfs.type, true);

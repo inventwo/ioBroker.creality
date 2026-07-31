@@ -45,17 +45,17 @@ Under `creality.<instance>.*` (examples):
 
 | State | Description |
 |-------|-------------|
+| `state` | UI print state (`printing`, `leveling`, `self-testing`, …) |
+| `stateKlipper` | Raw Moonraker / Klipper `print_stats.state` |
+| `selfTestStep` | Creality self-test phase (`0` idle, `5` leveling; other numbers = unknown phase) |
+| `currentJob.progress` | Progress % |
+| `currentJob.printName` | Print file name |
+| `currentJob.remainingText` / `currentJob.finishAt` | Remaining / finish time |
+| `currentJob.filamentSlot` / `filamentMaterial` / `filamentColor` | Active CFS filament |
 | `info.connection` | Connected (Moonraker or Creality WS) |
 | `info.model` | Printer model (e.g. `SPARKX i7`) |
 | `info.firmware` | Creality firmware version (e.g. `1.1.5.4`) |
 | `info.printHours` | Total print hours (`h`) |
-| `state` | UI print state (`printing`, `leveling`, `self-testing`, …) |
-| `stateKlipper` | Raw Moonraker / Klipper `print_stats.state` |
-| `selfTestStep` | Creality self-test phase (`0` idle, `5` leveling; other numbers = unknown phase) |
-| `progress` | Progress % |
-| `printName` | Print file name |
-| `remainingText` / `finishAt` | Remaining / finish time |
-| `filamentSlot` / `filamentMaterial` / `filamentColor` | Active CFS filament |
 | `temp.*` | Nozzle / bed temperatures |
 | `fans.*` | Fan % / RPM (optional) |
 | `cfs.*` | CFS box + slots T1A–T1D + box LED (optional) |
@@ -84,6 +84,7 @@ If you like our work and would like to support us, we appreciate any donation.
 - (skvarel) Added `info.model`, `info.firmware`, and `info.printHours`
 - (skvarel) Fixed adapter icon (`creality_icon.png`)
 - (skvarel) Added value list for `selfTestStep` (known phases)
+- (skvarel) Moved job-related states into `currentJob.*`
 
 
 ## Older changes
