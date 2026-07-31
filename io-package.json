@@ -59,7 +59,7 @@
 			"license": "MIT"
 		},
 		"platform": "Javascript/Node.js",
-		"icon": "creality.png",
+		"icon": "creality_icon.png",
 		"enabled": true,
 		"extIcon": "https://raw.githubusercontent.com/inventwo/ioBroker.creality/main/admin/creality_icon.png",
 		"readme": "https://github.com/inventwo/ioBroker.creality/blob/main/README.md",
