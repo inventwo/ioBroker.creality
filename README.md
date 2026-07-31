@@ -70,7 +70,7 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
   ### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.1.1 (2026-07-31)
 - (skvarel) Added forum link
 
 ### 0.1.0
