@@ -45,21 +45,17 @@ Under `creality.<instance>.*` (examples):
 
 | State | Description |
 |-------|-------------|
-| `state` | UI print state (`printing`, `leveling`, `self-testing`, …) |
-| `stateKlipper` | Raw Moonraker / Klipper `print_stats.state` |
-| `selfTestStep` | Creality self-test phase (`0` idle, `5` leveling; other numbers = unknown phase) |
-| `currentJob.progress` | Progress % |
-| `currentJob.printName` | Print file name |
-| `currentJob.remainingText` / `currentJob.finishAt` | Remaining / finish time |
-| `currentJob.filamentSlot` / `filamentMaterial` / `filamentColor` | Active CFS filament |
-| `info.connection` | Connected (Moonraker or Creality WS) |
-| `info.model` | Printer model (e.g. `SPARKX i7`) |
-| `info.firmware` | Creality firmware version (e.g. `1.1.5.4`) |
-| `info.printHours` | Total print hours (`h`) |
-| `temp.*` | Nozzle / bed temperatures |
-| `fans.*` | Fan % / RPM (optional) |
-| `cfs.*` | CFS box + slots T1A–T1D + box LED (optional) |
-| `control.light` / `pause` / `resume` / `stop` | Writable controls (optional) |
+| `state` / `stateKlipper` / `selfTestStep` | UI / Klipper status |
+| `currentJob.*` | Progress, file, times, layers, feed/flow, active filament |
+| `info.*` | Model, firmware, hostname, SN, disk, print hours/jobs, errors |
+| `temp.*` | Nozzle, bed, box/chamber |
+| `fans.*` / `cfs.*` | Fans / CFS (optional) |
+| `control.light` / `sleepMode` / `pause` / `resume` / `stop` | Controls |
+| `webcam.on` | Webcam on/off |
+| `webcam.streamUrl` | URL for VIS iframe (Creality WebRTC page, default `http://<host>:8000`) |
+| `webcam.webrtcUrl` | WebRTC signaling endpoint |
+
+**Webcam note:** SPARKX uses WebRTC on port `8000`, not classic MJPEG. `webcam.streamUrl` points at the Creality viewer page — usable in a VIS iframe if the browser can reach the printer IP. For Home Assistant / go2rtc use `webcam.webrtcUrl`.
 
 Prototype reference used while developing: `scripts/iobroker-print-status.js`.
 
@@ -85,6 +81,7 @@ If you like our work and would like to support us, we appreciate any donation.
 - (skvarel) Fixed adapter icon (`creality_icon.png`)
 - (skvarel) Added value list for `selfTestStep` (known phases)
 - (skvarel) Moved job-related states into `currentJob.*`
+- (skvarel) Added sleep mode, webcam on/off + stream URL, layers, speeds, disk/error info
 
 
 ## Older changes

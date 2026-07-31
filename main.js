@@ -23,6 +23,8 @@ const {
 	resolveModelName,
 	parseCrealityFirmware,
 	secondsToHours,
+	bytesToGb,
+	roundN,
 } = require('./lib/helpers');
 
 class Creality extends utils.Adapter {
@@ -46,10 +48,12 @@ class Creality extends utils.Adapter {
 		this.lastKlipperState = 'standby';
 		this.moonrakerReachable = true;
 		this.polling = false;
+		this.printerHost = '';
 	}
 
 	async onReady() {
 		const host = String(this.config.host || '').trim();
+		this.printerHost = host;
 		const moonrakerPort = Number(this.config.moonrakerPort) || 7125;
 		const crealityWsPort = Number(this.config.crealityWsPort) || 9999;
 		const pollInterval = Math.max(2, Number(this.config.pollInterval) || 5);
@@ -70,6 +74,7 @@ class Creality extends utils.Adapter {
 
 		await this.ensureObjects();
 		await this.setState('info.connection', false, true);
+		await this.refreshWebcamUrls();
 
 		this.crealityWs = new CrealityWsClient({
 			host,
@@ -80,17 +85,13 @@ class Creality extends utils.Adapter {
 			this.publishUiState(null);
 			this.publishProgressFromCreality();
 			this.publishDeviceInfoFromCreality();
-			if (this.config.enableControl !== false) {
-				const light = this.crealityWs && this.crealityWs.telem.lightSw;
-				if (light !== undefined) {
-					this.setState('control.light', Number(light) > 0, true);
-				}
-			}
+			this.publishControlsFromCreality();
 		});
 		this.crealityWs.start();
 
 		if (this.config.enableControl !== false) {
 			this.subscribeStates('control.*');
+			this.subscribeStates('webcam.on');
 			if (this.config.enableCfs !== false) {
 				this.subscribeStates('cfs.light');
 			}
@@ -141,6 +142,18 @@ class Creality extends utils.Adapter {
 				await this.crealityWs?.set({ lightSw: state.val ? 1 : 0 });
 				await this.setStateAsync('control.light', !!state.val, true);
 				this.log.info(`Toolhead LED → ${state.val ? 'ON' : 'OFF'}`);
+				return;
+			}
+			if (shortId === 'control.sleepMode') {
+				await this.crealityWs?.set({ sleepMode: state.val ? 1 : 0 });
+				await this.setStateAsync('control.sleepMode', !!state.val, true);
+				this.log.info(`Sleep mode → ${state.val ? 'ON' : 'OFF'}`);
+				return;
+			}
+			if (shortId === 'webcam.on') {
+				await this.crealityWs?.set({ video: state.val ? 1 : 0 });
+				await this.setStateAsync('webcam.on', !!state.val, true);
+				this.log.info(`Webcam → ${state.val ? 'ON' : 'OFF'}`);
 				return;
 			}
 			if (shortId === 'cfs.light') {
@@ -214,7 +227,6 @@ class Creality extends utils.Adapter {
 			}
 			return;
 		}
-		// Refresh name / states / unit when definitions change
 		const patch = {};
 		if (common.name && existing.common && existing.common.name !== common.name) {
 			patch.name = common.name;
@@ -239,14 +251,23 @@ class Creality extends utils.Adapter {
 	}
 
 	async ensureObjects() {
-		await this.ensureState('info.model', '', { name: 'Printer model', type: 'string' });
-		await this.ensureState('info.firmware', '', { name: 'Firmware version', type: 'string' });
-		await this.ensureState('info.printHours', 0, {
-			name: 'Total print hours',
-			type: 'number',
-			unit: 'h',
-			role: 'value',
-		});
+		for (const [id, init, common] of [
+			['model', '', { name: 'Printer model', type: 'string' }],
+			['firmware', '', { name: 'Firmware version', type: 'string' }],
+			['hostname', '', { name: 'Hostname', type: 'string' }],
+			['deviceSn', '', { name: 'Device serial', type: 'string' }],
+			['nozzleSize', 0, { name: 'Nozzle size', type: 'number', unit: 'mm' }],
+			['printHours', 0, { name: 'Total print hours', type: 'number', unit: 'h' }],
+			['printJobs', 0, { name: 'Total print jobs', type: 'number' }],
+			['filamentTotal', 0, { name: 'Total filament used', type: 'number', unit: 'g' }],
+			['diskUsed', 0, { name: 'Disk used', type: 'number', unit: 'GB' }],
+			['diskTotal', 0, { name: 'Disk total', type: 'number', unit: 'GB' }],
+			['materialStatus', 0, { name: 'Material status (raw)', type: 'number' }],
+			['errorCode', 0, { name: 'Error code', type: 'number' }],
+			['error', '', { name: 'Error message', type: 'string' }],
+		]) {
+			await this.ensureState(`info.${id}`, init, /** @type {ioBroker.StateCommon} */ (common));
+		}
 
 		const root = [
 			['state', '', { name: 'Print status (UI)', type: 'string' }],
@@ -263,14 +284,22 @@ class Creality extends utils.Adapter {
 			['printName', '', { name: 'Print file', type: 'string' }],
 			['remainingText', '00:00:00', { name: 'Remaining time', type: 'string' }],
 			['finishAt', '', { name: 'Finish at', type: 'string' }],
+			['printTime', '00:00:00', { name: 'Elapsed print time', type: 'string' }],
+			['layer', 0, { name: 'Current layer', type: 'number' }],
+			['totalLayers', 0, { name: 'Total layers', type: 'number' }],
+			['feedrate', 100, { name: 'Feedrate %', type: 'number', unit: '%' }],
+			['flowrate', 100, { name: 'Flowrate %', type: 'number', unit: '%' }],
+			['speed', 0, { name: 'Realtime speed', type: 'number', unit: 'mm/s' }],
+			['flow', 0, { name: 'Realtime flow', type: 'number', unit: 'mm³/s' }],
 			['filamentSlot', '', { name: 'Active filament slot', type: 'string' }],
 			['filamentMaterial', '', { name: 'Active filament material', type: 'string' }],
 			['filamentColor', '', { name: 'Active filament color', type: 'string' }],
+			['filamentUsed', 0, { name: 'Filament used (job)', type: 'number', unit: 'g' }],
+			['filamentLength', 0, { name: 'Filament length (job)', type: 'number', unit: 'mm' }],
 		]) {
 			await this.ensureState(`currentJob.${id}`, init, /** @type {ioBroker.StateCommon} */ (common));
 		}
 
-		// Remove legacy root states moved into currentJob
 		for (const id of [
 			'progress',
 			'printName',
@@ -294,6 +323,7 @@ class Creality extends utils.Adapter {
 			['nozzleTarget', 'Nozzle target °C'],
 			['bedTemp', 'Bed actual °C'],
 			['bedTarget', 'Bed target °C'],
+			['box', 'Box / chamber °C'],
 		]) {
 			await this.ensureState(`temp.${id}`, 0, {
 				name,
@@ -346,10 +376,34 @@ class Creality extends utils.Adapter {
 			}
 		}
 
+		await this.ensureChannel('webcam', 'Webcam');
+		await this.ensureState('webcam.on', false, {
+			name: 'Webcam on/off',
+			type: 'boolean',
+			write: true,
+			role: 'switch',
+		});
+		await this.ensureState('webcam.streamUrl', '', {
+			name: 'Webcam page / stream URL (iframe)',
+			type: 'string',
+			role: 'text.url',
+		});
+		await this.ensureState('webcam.webrtcUrl', '', {
+			name: 'WebRTC signaling URL',
+			type: 'string',
+			role: 'text.url',
+		});
+
 		if (this.config.enableControl !== false) {
 			await this.ensureChannel('control', 'Control');
 			await this.ensureState('control.light', false, {
 				name: 'Toolhead LED',
+				type: 'boolean',
+				write: true,
+				role: 'switch',
+			});
+			await this.ensureState('control.sleepMode', false, {
+				name: 'Sleep mode (all LEDs off)',
 				type: 'boolean',
 				write: true,
 				role: 'switch',
@@ -369,6 +423,40 @@ class Creality extends utils.Adapter {
 		}
 	}
 
+	defaultWebcamUrls() {
+		const host = this.printerHost;
+		const port = Number(this.config.webcamPort) || 8000;
+		const override = String(this.config.webcamStreamUrl || '').trim();
+		return {
+			streamUrl: override || (host ? `http://${host}:${port}` : ''),
+			webrtcUrl: host ? `http://${host}:${port}/call/webrtc_local` : '',
+		};
+	}
+
+	async refreshWebcamUrls() {
+		const defaults = this.defaultWebcamUrls();
+		let streamUrl = defaults.streamUrl;
+		const webrtcUrl = defaults.webrtcUrl;
+
+		if (!String(this.config.webcamStreamUrl || '').trim() && this.moonraker) {
+			try {
+				const data = await this.moonraker.getWebcams();
+				const cams = (data && data.result && data.result.webcams) || [];
+				const first = cams.find(c => c && c.stream_url) || cams[0];
+				if (first && first.stream_url) {
+					streamUrl = String(first.stream_url);
+				}
+			} catch (e) {
+				if (!isUnreachableError(e)) {
+					this.log.debug(`Webcam list: ${e.message}`);
+				}
+			}
+		}
+
+		await this.setStateAsync('webcam.streamUrl', streamUrl, true);
+		await this.setStateAsync('webcam.webrtcUrl', webrtcUrl, true);
+	}
+
 	/**
 	 * @param {string|null} klipperState
 	 */
@@ -384,13 +472,27 @@ class Creality extends utils.Adapter {
 		this.setState('selfTestStep', step != null && step !== '' ? Number(step) : 0, true);
 	}
 
+	publishControlsFromCreality() {
+		const ct = (this.crealityWs && this.crealityWs.telem) || {};
+		if (this.config.enableControl !== false) {
+			if (ct.lightSw !== undefined) {
+				this.setState('control.light', Number(ct.lightSw) > 0, true);
+			}
+			if (ct.sleepMode !== undefined) {
+				this.setState('control.sleepMode', Number(ct.sleepMode) > 0, true);
+			}
+		}
+		if (ct.video !== undefined) {
+			this.setState('webcam.on', Number(ct.video) > 0, true);
+		}
+	}
+
 	publishProgressFromCreality() {
 		const ct = (this.crealityWs && this.crealityWs.telem) || {};
 		let progress = Number(ct.printProgress != null ? ct.printProgress : ct.dProgress);
-		if (!Number.isFinite(progress) || progress < 0) {
-			return;
+		if (Number.isFinite(progress) && progress >= 0) {
+			this.setState('currentJob.progress', Math.round(progress * 10) / 10, true);
 		}
-		this.setState('currentJob.progress', Math.round(progress * 10) / 10, true);
 
 		let remainingSec = Number(ct.printLeftTime);
 		if (!Number.isFinite(remainingSec) || remainingSec < 0) {
@@ -405,6 +507,37 @@ class Creality extends utils.Adapter {
 		if (fname) {
 			this.setState('currentJob.printName', rawName(fname), true);
 		}
+
+		const jobSec = Number(ct.printJobTime);
+		if (Number.isFinite(jobSec) && jobSec >= 0) {
+			this.setState('currentJob.printTime', formatHms(jobSec), true);
+		}
+		if (ct.layer != null && ct.layer !== '') {
+			this.setState('currentJob.layer', Number(ct.layer) || 0, true);
+		}
+		if (ct.TotalLayer != null && ct.TotalLayer !== '') {
+			this.setState('currentJob.totalLayers', Number(ct.TotalLayer) || 0, true);
+		}
+		if (ct.curFeedratePct != null) {
+			this.setState('currentJob.feedrate', Number(ct.curFeedratePct) || 0, true);
+		}
+		if (ct.curFlowratePct != null) {
+			this.setState('currentJob.flowrate', Number(ct.curFlowratePct) || 0, true);
+		}
+		const speed = roundN(ct.realTimeSpeed, 1);
+		if (speed != null) {
+			this.setState('currentJob.speed', speed, true);
+		}
+		const flow = roundN(ct.realTimeFlow, 2);
+		if (flow != null) {
+			this.setState('currentJob.flow', flow, true);
+		}
+		if (ct.ConsumablesWeight != null) {
+			this.setState('currentJob.filamentUsed', Number(ct.ConsumablesWeight) || 0, true);
+		}
+		if (ct.usedMaterialLength != null) {
+			this.setState('currentJob.filamentLength', Number(ct.usedMaterialLength) || 0, true);
+		}
 	}
 
 	publishDeviceInfoFromCreality() {
@@ -417,9 +550,42 @@ class Creality extends utils.Adapter {
 		if (firmware) {
 			this.setState('info.firmware', firmware, true);
 		}
+		if (ct.hostname) {
+			this.setState('info.hostname', String(ct.hostname), true);
+		}
+		if (ct.deviceSn) {
+			this.setState('info.deviceSn', String(ct.deviceSn), true);
+		}
+		const nozzle = roundN(ct.nozzleSize, 2);
+		if (nozzle != null) {
+			this.setState('info.nozzleSize', nozzle, true);
+		}
 		const hours = secondsToHours(ct.allPrintTime);
 		if (hours != null) {
 			this.setState('info.printHours', hours, true);
+		}
+		if (ct.allPrintMaterial != null) {
+			this.setState('info.filamentTotal', Number(ct.allPrintMaterial) || 0, true);
+		}
+		const used = bytesToGb(ct.diskUsedSize);
+		const total = bytesToGb(ct.diskTotalSize);
+		if (used != null) {
+			this.setState('info.diskUsed', used, true);
+		}
+		if (total != null) {
+			this.setState('info.diskTotal', total, true);
+		}
+		if (ct.materialStatus != null) {
+			this.setState('info.materialStatus', Number(ct.materialStatus) || 0, true);
+		}
+		const err = ct.err || {};
+		const errCode = err.errcode != null ? Number(err.errcode) : 0;
+		this.setState('info.errorCode', Number.isFinite(errCode) ? errCode : 0, true);
+		this.setState('info.error', err.value != null ? String(err.value) : '', true);
+
+		const box = round1(ct.boxTemp);
+		if (box != null) {
+			this.setState('temp.box', box, true);
 		}
 	}
 
@@ -523,6 +689,7 @@ class Creality extends utils.Adapter {
 			await this.setStateAsync('info.connection', true, true);
 			this.logMoonrakerReachableAgain();
 			this.publishUiState(state);
+			this.publishProgressFromCreality();
 			await this.setStateAsync('currentJob.progress', progress, true);
 			await this.setStateAsync('currentJob.printName', rawName(filename), true);
 			await this.setStateAsync('currentJob.remainingText', formatHms(remainingSec), true);
@@ -566,25 +733,33 @@ class Creality extends utils.Adapter {
 			}
 
 			this.publishDeviceInfoFromCreality();
-			const ctPrintTime = Number(telem.allPrintTime);
-			if (!Number.isFinite(ctPrintTime) || ctPrintTime < 0) {
-				try {
-					const hist = await this.moonraker.getHistoryTotals();
-					const totals = (hist && hist.result && hist.result.job_totals) || {};
+			this.publishControlsFromCreality();
+
+			try {
+				const hist = await this.moonraker.getHistoryTotals();
+				const totals = (hist && hist.result && hist.result.job_totals) || {};
+				if (totals.total_jobs != null) {
+					await this.setStateAsync('info.printJobs', Number(totals.total_jobs) || 0, true);
+				}
+				const ctPrintTime = Number(telem.allPrintTime);
+				if (!Number.isFinite(ctPrintTime) || ctPrintTime < 0) {
 					const hours = secondsToHours(totals.total_print_time);
 					if (hours != null) {
 						await this.setStateAsync('info.printHours', hours, true);
 					}
-				} catch (e) {
-					if (!isUnreachableError(e)) {
-						this.log.warn(`History totals: ${e.message}`);
-					}
+				}
+			} catch (e) {
+				if (!isUnreachableError(e)) {
+					this.log.warn(`History totals: ${e.message}`);
 				}
 			}
+
+			await this.refreshWebcamUrls();
 		} catch (e) {
 			this.logMoonrakerUnreachable(e);
 			this.publishProgressFromCreality();
 			this.publishDeviceInfoFromCreality();
+			this.publishControlsFromCreality();
 			this.publishUiState(null);
 			const wsOk = !!(this.crealityWs && this.crealityWs.isOpen());
 			await this.setStateAsync('info.connection', wsOk, true);

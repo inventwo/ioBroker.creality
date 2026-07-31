@@ -71,6 +71,31 @@
 			"lg": 4,
 			"xl": 4
 		},
+		"webcamPort": {
+			"type": "number",
+			"label": "webcamPort",
+			"help": "webcamPort_help",
+			"newLine": true,
+			"default": 8000,
+			"min": 1,
+			"max": 65535,
+			"xs": 12,
+			"sm": 4,
+			"md": 3,
+			"lg": 2,
+			"xl": 2
+		},
+		"webcamStreamUrl": {
+			"type": "text",
+			"label": "webcamStreamUrl",
+			"help": "webcamStreamUrl_help",
+			"newLine": false,
+			"xs": 12,
+			"sm": 8,
+			"md": 6,
+			"lg": 4,
+			"xl": 4
+		},
 		"_features": {
 			"type": "header",
 			"text": "features_header",

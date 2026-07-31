@@ -8,7 +8,7 @@
 	"enableCfs": "CFS / filament box",
 	"enableCfs_help": "Create CFS channel, slot states (T1A–T1D) and CFS box LED.",
 	"enableControl": "Print controls",
-	"enableControl_help": "Create control states: toolhead LED, pause, resume, stop.",
+	"enableControl_help": "Create control states: toolhead LED, sleep mode, pause, resume, stop.",
 	"enableFans": "Fan states",
 	"enableFans_help": "Create fan percentage / RPM states.",
 	"features_header": "Features",
@@ -17,5 +17,9 @@
 	"moonrakerPort": "Moonraker HTTP port",
 	"moonrakerPort_help": "Default 7125. Fluidd reverse proxy often uses 4408.",
 	"pollInterval": "Poll interval (seconds)",
-	"pollInterval_help": "How often Moonraker is queried. Minimum 2 seconds."
+	"pollInterval_help": "How often Moonraker is queried. Minimum 2 seconds.",
+	"webcamPort": "Webcam port",
+	"webcamPort_help": "Default 8000 (Creality WebRTC viewer). Used when no custom stream URL is set.",
+	"webcamStreamUrl": "Webcam URL override",
+	"webcamStreamUrl_help": "Optional. Full URL for VIS iframe (e.g. http://192.168.x.x:8000). Empty = auto from Moonraker / default port."
 }

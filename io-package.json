@@ -90,6 +90,8 @@
 		"crealityWsPort": 9999,
 		"pollInterval": 5,
 		"apiKey": "",
+		"webcamPort": 8000,
+		"webcamStreamUrl": "",
 		"enableCfs": true,
 		"enableFans": true,
 		"enableControl": true
