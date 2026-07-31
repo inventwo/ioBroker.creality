@@ -26,17 +26,6 @@ Moonraker alone is not enough for Creality UI states (e.g. leveling while Klippe
 
 Other Creality Klipper models may work best-effort; only SPARKX i7 has been tested so far.
 
-## Installation
-
-Install from GitHub (until published to the ioBroker repository):
-
-```bash
-npm install inventwo/ioBroker.creality --prefix /opt/iobroker
-iobroker restart creality
-```
-
-Or use the Admin “Adapters from GitHub” install with `https://github.com/inventwo/ioBroker.creality`.
-
 ## Configuration
 
 | Setting | Default | Description |
@@ -57,6 +46,9 @@ Under `creality.<instance>.*` (examples):
 | State | Description |
 |-------|-------------|
 | `info.connection` | Connected (Moonraker or Creality WS) |
+| `info.model` | Printer model (e.g. `SPARKX i7`) |
+| `info.firmware` | Creality firmware version (e.g. `1.1.5.4`) |
+| `info.printHours` | Total print hours (`h`) |
 | `state` | UI print state (`printing`, `leveling`, `self-testing`, …) |
 | `stateKlipper` | Raw Moonraker / Klipper `print_stats.state` |
 | `selfTestStep` | Creality self-test step (e.g. `5` = leveling) |
@@ -89,6 +81,8 @@ If you like our work and would like to support us, we appreciate any donation.
 
 - (skvarel) Added Moonraker + Creality WebSocket adapter for SPARKX i7 / CFS
 - (skvarel) Added print status, temps, fans, CFS slots, and print controls
+- (skvarel) Added `info.model`, `info.firmware`, and `info.printHours`
+- (skvarel) Fixed adapter icon (`creality_icon.png`)
 
 
 ## Older changes

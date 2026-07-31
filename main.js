@@ -19,6 +19,9 @@ const {
 	parseCfs,
 	mapUiState,
 	calcRemaining,
+	resolveModelName,
+	parseCrealityFirmware,
+	secondsToHours,
 } = require('./lib/helpers');
 
 class Creality extends utils.Adapter {
@@ -75,6 +78,7 @@ class Creality extends utils.Adapter {
 		this.crealityWs.on('telem', () => {
 			this.publishUiState(null);
 			this.publishProgressFromCreality();
+			this.publishDeviceInfoFromCreality();
 			if (this.config.enableControl !== false) {
 				const light = this.crealityWs && this.crealityWs.telem.lightSw;
 				if (light !== undefined) {
@@ -215,6 +219,15 @@ class Creality extends utils.Adapter {
 	}
 
 	async ensureObjects() {
+		await this.ensureState('info.model', '', { name: 'Printer model', type: 'string' });
+		await this.ensureState('info.firmware', '', { name: 'Firmware version', type: 'string' });
+		await this.ensureState('info.printHours', 0, {
+			name: 'Total print hours',
+			type: 'number',
+			unit: 'h',
+			role: 'value',
+		});
+
 		const root = [
 			['state', '', { name: 'Print status (UI)', type: 'string' }],
 			['stateKlipper', '', { name: 'Print status (Klipper/Moonraker)', type: 'string' }],
@@ -347,6 +360,22 @@ class Creality extends utils.Adapter {
 		const fname = ct.printFileName ? String(ct.printFileName) : '';
 		if (fname) {
 			this.setState('printName', rawName(fname), true);
+		}
+	}
+
+	publishDeviceInfoFromCreality() {
+		const ct = (this.crealityWs && this.crealityWs.telem) || {};
+		const model = resolveModelName(ct.model, ct.hostname);
+		if (model) {
+			this.setState('info.model', model, true);
+		}
+		const firmware = parseCrealityFirmware(ct.modelVersion);
+		if (firmware) {
+			this.setState('info.firmware', firmware, true);
+		}
+		const hours = secondsToHours(ct.allPrintTime);
+		if (hours != null) {
+			this.setState('info.printHours', hours, true);
 		}
 	}
 
@@ -491,9 +520,27 @@ class Creality extends utils.Adapter {
 					await this.setStateAsync(`cfs.${slotId}.active`, s.active, true);
 				}
 			}
+
+			this.publishDeviceInfoFromCreality();
+			const ctPrintTime = Number(telem.allPrintTime);
+			if (!Number.isFinite(ctPrintTime) || ctPrintTime < 0) {
+				try {
+					const hist = await this.moonraker.getHistoryTotals();
+					const totals = (hist && hist.result && hist.result.job_totals) || {};
+					const hours = secondsToHours(totals.total_print_time);
+					if (hours != null) {
+						await this.setStateAsync('info.printHours', hours, true);
+					}
+				} catch (e) {
+					if (!isUnreachableError(e)) {
+						this.log.warn(`History totals: ${e.message}`);
+					}
+				}
+			}
 		} catch (e) {
 			this.logMoonrakerUnreachable(e);
 			this.publishProgressFromCreality();
+			this.publishDeviceInfoFromCreality();
 			this.publishUiState(null);
 			const wsOk = !!(this.crealityWs && this.crealityWs.isOpen());
 			await this.setStateAsync('info.connection', wsOk, true);
