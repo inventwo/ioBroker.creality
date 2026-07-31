@@ -1,0 +1,513 @@
+'use strict';
+
+/*
+ * Created with @iobroker/create-adapter v3.1.5
+ * Logic ported from scripts/iobroker-print-status.js (SPARKX i7 / Moonraker + Creality WS)
+ */
+
+const utils = require('@iobroker/adapter-core');
+const { MoonrakerClient } = require('./lib/moonraker');
+const { CrealityWsClient } = require('./lib/crealityWs');
+const {
+	CFS_SLOTS,
+	isUnreachableError,
+	formatHms,
+	formatFinishAt,
+	rawName,
+	round1,
+	pinToPercent,
+	parseCfs,
+	mapUiState,
+	calcRemaining,
+} = require('./lib/helpers');
+
+class Creality extends utils.Adapter {
+	/**
+	 * @param {Partial<utils.AdapterOptions>} [options]
+	 */
+	constructor(options) {
+		super({
+			...options,
+			name: 'creality',
+		});
+		this.on('ready', this.onReady.bind(this));
+		this.on('stateChange', this.onStateChange.bind(this));
+		this.on('unload', this.onUnload.bind(this));
+
+		this.moonraker = null;
+		this.crealityWs = null;
+		this.pollTimer = null;
+		this.lastFilename = '';
+		this.estimatedTime = 0;
+		this.lastKlipperState = 'standby';
+		this.moonrakerReachable = true;
+		this.polling = false;
+	}
+
+	async onReady() {
+		const host = String(this.config.host || '').trim();
+		const moonrakerPort = Number(this.config.moonrakerPort) || 7125;
+		const crealityWsPort = Number(this.config.crealityWsPort) || 9999;
+		const pollInterval = Math.max(2, Number(this.config.pollInterval) || 5);
+		const apiKey = String(this.config.apiKey || '').trim();
+
+		if (!host) {
+			this.log.error('Please set the printer host/IP in the adapter settings');
+			await this.setState('info.connection', false, true);
+			return;
+		}
+
+		this.moonraker = new MoonrakerClient({
+			host,
+			port: moonrakerPort,
+			apiKey,
+			timeoutMs: 15000,
+		});
+
+		await this.ensureObjects();
+		await this.setState('info.connection', false, true);
+
+		this.crealityWs = new CrealityWsClient({
+			host,
+			port: crealityWsPort,
+			log: this.log,
+		});
+		this.crealityWs.on('telem', () => {
+			this.publishUiState(null);
+			this.publishProgressFromCreality();
+			if (this.config.enableControl !== false) {
+				const light = this.crealityWs && this.crealityWs.telem.lightSw;
+				if (light !== undefined) {
+					this.setState('control.light', Number(light) > 0, true);
+				}
+			}
+		});
+		this.crealityWs.start();
+
+		if (this.config.enableControl !== false) {
+			this.subscribeStates('control.*');
+			if (this.config.enableCfs !== false) {
+				this.subscribeStates('cfs.light');
+			}
+		}
+
+		this.log.info(
+			`Creality adapter started → ${host} (Moonraker :${moonrakerPort}, Creality-WS :${crealityWsPort}, poll ${pollInterval}s)`,
+		);
+
+		await this.poll();
+		this.pollTimer = this.setInterval(() => {
+			this.poll().catch(err => this.logMoonrakerUnreachable(err));
+		}, pollInterval * 1000);
+	}
+
+	/**
+	 * @param {() => void} callback
+	 */
+	onUnload(callback) {
+		try {
+			if (this.pollTimer) {
+				this.clearInterval(this.pollTimer);
+				this.pollTimer = null;
+			}
+			if (this.crealityWs) {
+				this.crealityWs.stop();
+				this.crealityWs = null;
+			}
+			callback();
+		} catch (error) {
+			this.log.error(`Error during unloading: ${error.message}`);
+			callback();
+		}
+	}
+
+	/**
+	 * @param {string} id
+	 * @param {ioBroker.State | null | undefined} state
+	 */
+	async onStateChange(id, state) {
+		if (!state || state.ack) {
+			return;
+		}
+		const shortId = id.replace(`${this.namespace}.`, '');
+
+		try {
+			if (shortId === 'control.light') {
+				await this.crealityWs?.set({ lightSw: state.val ? 1 : 0 });
+				await this.setStateAsync('control.light', !!state.val, true);
+				this.log.info(`Toolhead LED → ${state.val ? 'ON' : 'OFF'}`);
+				return;
+			}
+			if (shortId === 'cfs.light') {
+				await this.moonraker?.sendGcode(`LED_SWITCH SWITCH=${state.val ? 1 : 0}`);
+				await this.setStateAsync('cfs.light', !!state.val, true);
+				this.log.info(`CFS box LED → ${state.val ? 'ON' : 'OFF'}`);
+				return;
+			}
+			if (shortId === 'control.pause') {
+				if (state.val) {
+					try {
+						await this.crealityWs?.set({ pause: 1 });
+					} catch {
+						await this.moonraker?.sendGcode('PAUSE');
+					}
+					this.log.info('Print → pause');
+				}
+				await this.setStateAsync('control.pause', false, true);
+				return;
+			}
+			if (shortId === 'control.resume') {
+				if (state.val) {
+					try {
+						await this.crealityWs?.set({ pause: 0 });
+					} catch {
+						await this.moonraker?.sendGcode('RESUME');
+					}
+					this.log.info('Print → resume');
+				}
+				await this.setStateAsync('control.resume', false, true);
+				return;
+			}
+			if (shortId === 'control.stop') {
+				if (state.val) {
+					try {
+						await this.crealityWs?.set({ stop: 1 });
+					} catch {
+						await this.moonraker?.sendGcode('CANCEL_PRINT');
+					}
+					this.log.info('Print → stop');
+				}
+				await this.setStateAsync('control.stop', false, true);
+			}
+		} catch (e) {
+			this.log.error(`Control failed (${shortId}): ${e.message}`);
+		}
+	}
+
+	/**
+	 * @param {string} id
+	 * @param {any} init
+	 * @param {ioBroker.StateCommon} common
+	 */
+	async ensureState(id, init, common) {
+		await this.setObjectNotExistsAsync(id, {
+			type: 'state',
+			common: {
+				read: true,
+				write: false,
+				role: common.role || (common.type === 'boolean' ? 'indicator' : 'value'),
+				...common,
+			},
+			native: {},
+		});
+		const cur = await this.getStateAsync(id);
+		if (cur === null || cur === undefined) {
+			await this.setStateAsync(id, { val: init, ack: true });
+		}
+	}
+
+	async ensureChannel(id, name) {
+		await this.setObjectNotExistsAsync(id, {
+			type: 'channel',
+			common: { name },
+			native: {},
+		});
+	}
+
+	async ensureObjects() {
+		const root = [
+			['state', '', { name: 'Print status (UI)', type: 'string' }],
+			['stateKlipper', '', { name: 'Print status (Klipper/Moonraker)', type: 'string' }],
+			['selfTestStep', 0, { name: 'Self-test step', type: 'number' }],
+			['progress', 0, { name: 'Progress %', type: 'number', unit: '%' }],
+			['printName', '', { name: 'Print file', type: 'string' }],
+			['remainingText', '00:00:00', { name: 'Remaining time', type: 'string' }],
+			['finishAt', '', { name: 'Finish at', type: 'string' }],
+			['filamentSlot', '', { name: 'Active filament slot', type: 'string' }],
+			['filamentMaterial', '', { name: 'Active filament material', type: 'string' }],
+			['filamentColor', '', { name: 'Active filament color', type: 'string' }],
+		];
+		for (const [id, init, common] of root) {
+			await this.ensureState(id, init, common);
+		}
+
+		await this.ensureChannel('temp', 'Temperatures');
+		for (const [id, name] of [
+			['nozzleTemp', 'Nozzle actual °C'],
+			['nozzleTarget', 'Nozzle target °C'],
+			['bedTemp', 'Bed actual °C'],
+			['bedTarget', 'Bed target °C'],
+		]) {
+			await this.ensureState(`temp.${id}`, 0, {
+				name,
+				type: 'number',
+				unit: '°C',
+				role: 'value.temperature',
+			});
+		}
+
+		if (this.config.enableFans !== false) {
+			await this.ensureChannel('fans', 'Fans');
+			for (const [id, name, unit] of [
+				['partCooling', 'Part cooling %', '%'],
+				['partCoolingRpm', 'Part cooling RPM', 'rpm'],
+				['hotend', 'Hotend fan %', '%'],
+				['board', 'Board fan %', '%'],
+				['aux', 'Aux / E fan %', '%'],
+			]) {
+				await this.ensureState(`fans.${id}`, 0, { name, type: 'number', unit });
+			}
+		}
+
+		if (this.config.enableCfs !== false) {
+			await this.ensureChannel('cfs', 'CFS');
+			for (const [id, init, common] of [
+				['type', '', { name: 'CFS type', type: 'string' }],
+				['state', '', { name: 'CFS state', type: 'string' }],
+				['enable', false, { name: 'CFS enabled', type: 'boolean' }],
+				['temperature', 0, { name: 'CFS temperature °C', type: 'number', unit: '°C' }],
+				['humidity', 0, { name: 'CFS humidity %', type: 'number', unit: '%' }],
+				['light', false, { name: 'CFS box LED', type: 'boolean', write: true, role: 'switch' }],
+			]) {
+				await this.ensureState(`cfs.${id}`, init, common);
+			}
+			for (const slot of CFS_SLOTS) {
+				await this.ensureChannel(`cfs.${slot}`, slot);
+				await this.ensureState(`cfs.${slot}.color`, '', { name: `${slot} color`, type: 'string' });
+				await this.ensureState(`cfs.${slot}.material`, '', {
+					name: `${slot} material`,
+					type: 'string',
+				});
+				await this.ensureState(`cfs.${slot}.occupied`, false, {
+					name: `${slot} occupied`,
+					type: 'boolean',
+				});
+				await this.ensureState(`cfs.${slot}.active`, false, {
+					name: `${slot} active`,
+					type: 'boolean',
+				});
+			}
+		}
+
+		if (this.config.enableControl !== false) {
+			await this.ensureChannel('control', 'Control');
+			await this.ensureState('control.light', false, {
+				name: 'Toolhead LED',
+				type: 'boolean',
+				write: true,
+				role: 'switch',
+			});
+			for (const [id, name] of [
+				['pause', 'Pause'],
+				['resume', 'Resume'],
+				['stop', 'Stop / cancel'],
+			]) {
+				await this.ensureState(`control.${id}`, false, {
+					name,
+					type: 'boolean',
+					write: true,
+					role: 'button',
+				});
+			}
+		}
+	}
+
+	/**
+	 * @param {string|null} klipperState
+	 */
+	publishUiState(klipperState) {
+		if (klipperState != null) {
+			this.lastKlipperState = klipperState;
+		}
+		const telem = (this.crealityWs && this.crealityWs.telem) || {};
+		const ui = mapUiState(this.lastKlipperState, telem);
+		this.setState('state', ui, true);
+		this.setState('stateKlipper', this.lastKlipperState || '', true);
+		const step = telem.selfTestStep;
+		this.setState('selfTestStep', step != null && step !== '' ? Number(step) : 0, true);
+	}
+
+	publishProgressFromCreality() {
+		const ct = (this.crealityWs && this.crealityWs.telem) || {};
+		let progress = Number(ct.printProgress != null ? ct.printProgress : ct.dProgress);
+		if (!Number.isFinite(progress) || progress < 0) {
+			return;
+		}
+		this.setState('progress', Math.round(progress * 10) / 10, true);
+
+		let remainingSec = Number(ct.printLeftTime);
+		if (!Number.isFinite(remainingSec) || remainingSec < 0) {
+			remainingSec = 0;
+		}
+		const ui = mapUiState(this.lastKlipperState, ct);
+		if (ui === 'printing' || ui === 'paused' || ui === 'leveling' || ui === 'self-testing' || ui === 'preparing') {
+			this.setState('remainingText', formatHms(remainingSec), true);
+			this.setState('finishAt', formatFinishAt(remainingSec), true);
+		}
+		const fname = ct.printFileName ? String(ct.printFileName) : '';
+		if (fname) {
+			this.setState('printName', rawName(fname), true);
+		}
+	}
+
+	/**
+	 * @param {unknown} err
+	 */
+	logMoonrakerUnreachable(err) {
+		const msg = err && err.message ? err.message : String(err);
+		if (isUnreachableError(err)) {
+			if (this.moonrakerReachable) {
+				this.log.info(`Moonraker unreachable: ${msg}`);
+				this.moonrakerReachable = false;
+			}
+			return;
+		}
+		this.log.warn(`Moonraker poll: ${msg}`);
+	}
+
+	logMoonrakerReachableAgain() {
+		if (!this.moonrakerReachable) {
+			this.log.info('Moonraker reachable again');
+			this.moonrakerReachable = true;
+		}
+	}
+
+	async poll() {
+		if (this.polling || !this.moonraker) {
+			return;
+		}
+		this.polling = true;
+		try {
+			const data = await this.moonraker.queryCore();
+			const st = (data && data.result && data.result.status) || {};
+			const ps = st.print_stats || {};
+			const ds = st.display_status || {};
+			const vs = st.virtual_sdcard || {};
+			const ex = st.extruder || {};
+			const bed = st.heater_bed || {};
+			const fb = st.fan_feedback || {};
+			const fan0 = st['output_pin fan0'] || {};
+			const boardFan = st['output_pin board_fan'] || {};
+			const eFan = st['output_pin e_fan'] || {};
+			const hotendFan = st['heater_fan hotend_fan'] || {};
+
+			let cfs = {
+				type: '',
+				state: '',
+				enable: false,
+				temperature: null,
+				humidity: null,
+				activeSlot: '',
+				activeColor: '',
+				activeMaterial: '',
+				slots: {},
+			};
+			if (this.config.enableCfs !== false) {
+				try {
+					const cfsData = await this.moonraker.queryCfs();
+					const cst = (cfsData && cfsData.result && cfsData.result.status) || {};
+					cfs = parseCfs(cst.box, cst.filament_inventory_manager);
+				} catch (e) {
+					if (!isUnreachableError(e)) {
+						this.log.warn(`CFS poll: ${e.message}`);
+					}
+				}
+			}
+
+			const state = ps.state || 'unknown';
+			const filename = ps.filename || '';
+			let progress01 = Number(ds.progress != null ? ds.progress : vs.progress != null ? vs.progress : 0);
+			const telem = (this.crealityWs && this.crealityWs.telem) || {};
+			const ctProg = Number(telem.printProgress != null ? telem.printProgress : telem.dProgress);
+			if ((!progress01 || progress01 <= 0) && Number.isFinite(ctProg) && ctProg > 0) {
+				progress01 = ctProg / 100;
+			}
+			const progress = Math.round(progress01 * 1000) / 10;
+			const printDuration = Number(ps.print_duration) || 0;
+
+			if (filename && filename !== this.lastFilename) {
+				this.lastFilename = filename;
+				try {
+					this.estimatedTime = await this.moonraker.getEstimatedTime(filename);
+				} catch (e) {
+					if (!isUnreachableError(e)) {
+						this.log.warn(`Metadata: ${e.message}`);
+					}
+					this.estimatedTime = 0;
+				}
+			}
+			if (!filename) {
+				this.lastFilename = '';
+				this.estimatedTime = 0;
+			}
+
+			let remainingSec = calcRemaining(state, progress01, printDuration, this.estimatedTime);
+			const ctLeft = Number(telem.printLeftTime);
+			if ((!remainingSec || remainingSec <= 0) && Number.isFinite(ctLeft) && ctLeft > 0) {
+				remainingSec = ctLeft;
+			}
+
+			await this.setStateAsync('info.connection', true, true);
+			this.logMoonrakerReachableAgain();
+			this.publishUiState(state);
+			await this.setStateAsync('progress', progress, true);
+			await this.setStateAsync('printName', rawName(filename), true);
+			await this.setStateAsync('remainingText', formatHms(remainingSec), true);
+			await this.setStateAsync('finishAt', formatFinishAt(remainingSec), true);
+
+			await this.setStateAsync('temp.nozzleTemp', round1(ex.temperature), true);
+			await this.setStateAsync('temp.nozzleTarget', round1(ex.target), true);
+			await this.setStateAsync('temp.bedTemp', round1(bed.temperature), true);
+			await this.setStateAsync('temp.bedTarget', round1(bed.target), true);
+
+			if (this.config.enableFans !== false) {
+				await this.setStateAsync('fans.partCooling', pinToPercent(fan0.value), true);
+				await this.setStateAsync('fans.partCoolingRpm', Number(fb.fan0_speed) || 0, true);
+				await this.setStateAsync('fans.hotend', pinToPercent(hotendFan.speed), true);
+				await this.setStateAsync('fans.board', pinToPercent(boardFan.value), true);
+				await this.setStateAsync('fans.aux', pinToPercent(eFan.value), true);
+			}
+
+			await this.setStateAsync('filamentSlot', cfs.activeSlot, true);
+			await this.setStateAsync('filamentMaterial', cfs.activeMaterial, true);
+			await this.setStateAsync('filamentColor', cfs.activeColor, true);
+
+			if (this.config.enableCfs !== false) {
+				await this.setStateAsync('cfs.type', cfs.type, true);
+				await this.setStateAsync('cfs.state', cfs.state, true);
+				await this.setStateAsync('cfs.enable', cfs.enable, true);
+				await this.setStateAsync('cfs.temperature', cfs.temperature, true);
+				await this.setStateAsync('cfs.humidity', cfs.humidity, true);
+				for (const slotId of CFS_SLOTS) {
+					const s = cfs.slots[slotId] || {
+						color: '',
+						material: '',
+						occupied: false,
+						active: false,
+					};
+					await this.setStateAsync(`cfs.${slotId}.color`, s.color, true);
+					await this.setStateAsync(`cfs.${slotId}.material`, s.material, true);
+					await this.setStateAsync(`cfs.${slotId}.occupied`, s.occupied, true);
+					await this.setStateAsync(`cfs.${slotId}.active`, s.active, true);
+				}
+			}
+		} catch (e) {
+			this.logMoonrakerUnreachable(e);
+			this.publishProgressFromCreality();
+			this.publishUiState(null);
+			const wsOk = !!(this.crealityWs && this.crealityWs.isOpen());
+			await this.setStateAsync('info.connection', wsOk, true);
+		} finally {
+			this.polling = false;
+		}
+	}
+}
+
+if (require.main !== module) {
+	/**
+	 * @param {Partial<utils.AdapterOptions>} [options]
+	 */
+	module.exports = options => new Creality(options);
+} else {
+	new Creality();
+}

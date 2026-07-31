@@ -1,0 +1,21 @@
+{
+	"apiKey": "Moonraker API-Key",
+	"apiKey_help": "Optional. Nur nötig, wenn Moonraker-Authentifizierung aktiv ist.",
+	"connection_header": "Drucker-Verbindung",
+	"creality adapter settings": "Adaptereinstellungen für Creality",
+	"crealityWsPort": "Creality-WebSocket-Port",
+	"crealityWsPort_help": "Standard 9999. Für Toolhead-LED, Pause/Resume/Stop, Nivellierung / Self-Test und printLeftTime.",
+	"enableCfs": "CFS / Filament-Box",
+	"enableCfs_help": "CFS-Kanal, Slot-States (T1A–T1D) und CFS-Box-LED anlegen.",
+	"enableControl": "Druck-Steuerung",
+	"enableControl_help": "Control-States anlegen: Toolhead-LED, Pause, Resume, Stop.",
+	"enableFans": "Lüfter-States",
+	"enableFans_help": "Lüfter-Prozent- / RPM-States anlegen.",
+	"features_header": "Funktionen",
+	"host": "Drucker Host / IP",
+	"host_help": "IP-Adresse oder Hostname des Creality-Druckers (z. B. SPARKX i7).",
+	"moonrakerPort": "Moonraker HTTP-Port",
+	"moonrakerPort_help": "Standard 7125. Fluidd-Reverse-Proxy nutzt oft 4408.",
+	"pollInterval": "Abfrageintervall (Sekunden)",
+	"pollInterval_help": "Wie oft Moonraker abgefragt wird. Minimum 2 Sekunden."
+}

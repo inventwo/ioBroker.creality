@@ -1,0 +1,117 @@
+{
+	"i18n": true,
+	"type": "panel",
+	"items": {
+		"_header": {
+			"type": "header",
+			"text": "connection_header",
+			"size": 2
+		},
+		"host": {
+			"type": "text",
+			"label": "host",
+			"help": "host_help",
+			"newLine": true,
+			"xs": 12,
+			"sm": 8,
+			"md": 6,
+			"lg": 4,
+			"xl": 4
+		},
+		"moonrakerPort": {
+			"type": "number",
+			"label": "moonrakerPort",
+			"help": "moonrakerPort_help",
+			"newLine": false,
+			"default": 7125,
+			"min": 1,
+			"max": 65535,
+			"xs": 12,
+			"sm": 4,
+			"md": 3,
+			"lg": 2,
+			"xl": 2
+		},
+		"crealityWsPort": {
+			"type": "number",
+			"label": "crealityWsPort",
+			"help": "crealityWsPort_help",
+			"newLine": false,
+			"default": 9999,
+			"min": 1,
+			"max": 65535,
+			"xs": 12,
+			"sm": 4,
+			"md": 3,
+			"lg": 2,
+			"xl": 2
+		},
+		"pollInterval": {
+			"type": "number",
+			"label": "pollInterval",
+			"help": "pollInterval_help",
+			"newLine": true,
+			"default": 5,
+			"min": 2,
+			"max": 300,
+			"xs": 12,
+			"sm": 4,
+			"md": 3,
+			"lg": 2,
+			"xl": 2
+		},
+		"apiKey": {
+			"type": "password",
+			"label": "apiKey",
+			"help": "apiKey_help",
+			"newLine": false,
+			"xs": 12,
+			"sm": 8,
+			"md": 6,
+			"lg": 4,
+			"xl": 4
+		},
+		"_features": {
+			"type": "header",
+			"text": "features_header",
+			"size": 2,
+			"newLine": true
+		},
+		"enableControl": {
+			"type": "checkbox",
+			"label": "enableControl",
+			"help": "enableControl_help",
+			"newLine": true,
+			"default": true,
+			"xs": 12,
+			"sm": 6,
+			"md": 4,
+			"lg": 3,
+			"xl": 3
+		},
+		"enableCfs": {
+			"type": "checkbox",
+			"label": "enableCfs",
+			"help": "enableCfs_help",
+			"newLine": false,
+			"default": true,
+			"xs": 12,
+			"sm": 6,
+			"md": 4,
+			"lg": 3,
+			"xl": 3
+		},
+		"enableFans": {
+			"type": "checkbox",
+			 "label": "enableFans",
+			"help": "enableFans_help",
+			"newLine": false,
+			"default": true,
+			"xs": 12,
+			"sm": 6,
+			"md": 4,
+			"lg": 3,
+			"xl": 3
+		}
+	}
+}
