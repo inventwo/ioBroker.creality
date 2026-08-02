@@ -204,10 +204,12 @@ class Creality extends utils.Adapter {
 	 */
 	async ensureState(id, init, common) {
 		const existing = await this.getObjectAsync(id);
+		const defaultRole =
+			common.type === 'boolean' ? 'indicator' : common.type === 'string' ? 'text' : 'value';
 		const fullCommon = {
 			read: true,
 			write: false,
-			role: common.role || (common.type === 'boolean' ? 'indicator' : 'value'),
+			role: common.role || defaultRole,
 			...common,
 		};
 		if (!existing) {
@@ -231,6 +233,12 @@ class Creality extends utils.Adapter {
 		}
 		if (common.unit !== undefined && existing.common && existing.common.unit !== common.unit) {
 			patch.unit = common.unit;
+		}
+		if (fullCommon.role && existing.common && existing.common.role !== fullCommon.role) {
+			patch.role = fullCommon.role;
+		}
+		if (fullCommon.type && existing.common && existing.common.type !== fullCommon.type) {
+			patch.type = fullCommon.type;
 		}
 		if (Object.keys(patch).length) {
 			await this.extendObjectAsync(id, { common: patch });
