@@ -204,8 +204,7 @@ class Creality extends utils.Adapter {
 	 */
 	async ensureState(id, init, common) {
 		const existing = await this.getObjectAsync(id);
-		const defaultRole =
-			common.type === 'boolean' ? 'indicator' : common.type === 'string' ? 'text' : 'value';
+		const defaultRole = common.type === 'boolean' ? 'indicator' : common.type === 'string' ? 'text' : 'value';
 		const fullCommon = {
 			read: true,
 			write: false,
