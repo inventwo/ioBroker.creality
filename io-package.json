@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "creality",
-    "version": "0.1.3",
+    "version": "0.1.4",
     "news": {
+      "0.1.4": {
+        "en": "Fixed string state roles for repository object check",
+        "de": "Feste String-State-Rollen für Repository Object Check",
+        "ru": "Функции фиксированного состояния строки для проверки объекта хранилища",
+        "pt": "Funções de estado de texto fixas para verificação de objetos do repositório",
+        "nl": "Vaste string status rollen voor repository object controle",
+        "fr": "Rôles d'état de chaîne fixes pour la vérification des objets du dépôt",
+        "it": "Risolti ruoli di stato della stringa per il controllo degli oggetti del repository",
+        "es": "Funciones de estado de cadena fija para el control de objetos de repositorio",
+        "pl": "Stałe role stanu łańcucha dla sprawdzania obiektu repozytorium",
+        "uk": "Фіксовані рядові ролі для перевірки репозиторійного об'єкта",
+        "zh-cn": "用于仓库对象检查的固定字符串状态角色"
+      },
       "0.1.3": {
         "en": "Fixed deploy CI to use Node.js 24\nFixed admin jsonConfig indentation\nModified Dependabot auto-merge to the new ioBroker workflow/action\nModified Dependabot schedule to cron\nModified TypeScript tooling to Node 22\nAdded Cursor rules to the repository",
         "de": "Fixe Bereitstellungs-CI für Node.js 24\nFixed admin jsonConfig indentation\nModifiziertes Dependabot Auto-Merge zum neuen ioBroker Workflow/Aktion\nModifizierter Dependabot-Zeitplan für cron\nModifizierte TypeScript-Tools für Node 22\nCursorregeln zum Repository hinzugefügt",
