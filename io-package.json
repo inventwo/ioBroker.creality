@@ -146,7 +146,8 @@
     "webcamStreamUrl": "",
     "enableCfs": true,
     "enableFans": true,
-    "enableControl": true
+    "enableControl": true,
+    "fan0Min": -1
   },
   "encryptedNative": [
     "apiKey"

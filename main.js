@@ -17,6 +17,7 @@ const {
 	rawName,
 	round1,
 	pinToPercent,
+	pinToUiPercent,
 	parseCfs,
 	mapUiState,
 	calcRemaining,
@@ -49,6 +50,9 @@ class Creality extends utils.Adapter {
 		this.moonrakerReachable = true;
 		this.polling = false;
 		this.printerHost = '';
+		/** @type {number|null} detected Creality fan0_min (PWM 0–255) */
+		this.detectedFan0Min = null;
+		this.fanMinRefreshAt = 0;
 	}
 
 	async onReady() {
@@ -338,7 +342,8 @@ class Creality extends utils.Adapter {
 		if (this.config.enableFans !== false) {
 			await this.ensureChannel('fans', 'Fans');
 			for (const [id, name, unit] of [
-				['partCooling', 'Part cooling %', '%'],
+				['partCooling', 'Part cooling % (UI / slicer)', '%'],
+				['partCoolingPwm', 'Part cooling PWM % (hardware)', '%'],
 				['partCoolingRpm', 'Part cooling RPM', 'rpm'],
 				['hotend', 'Hotend fan %', '%'],
 				['board', 'Board fan %', '%'],
@@ -596,6 +601,50 @@ class Creality extends utils.Adapter {
 	}
 
 	/**
+	 * Effective fan0_min for Creality M106 UI remapping.
+	 * Config `fan0Min` >= 0 overrides auto-detect from PRINTER_PARAM.
+	 *
+	 * @returns {number}
+	 */
+	resolveFan0Min() {
+		const cfg = Number(this.config.fan0Min);
+		if (Number.isFinite(cfg) && cfg >= 0) {
+			return Math.min(254, cfg);
+		}
+		if (this.detectedFan0Min != null && Number.isFinite(this.detectedFan0Min)) {
+			return Math.min(254, Math.max(0, this.detectedFan0Min));
+		}
+		return 0;
+	}
+
+	/**
+	 * Refresh Creality PRINTER_PARAM.fan0_min (cached ~5 minutes).
+	 *
+	 * @returns {Promise<void>}
+	 */
+	async refreshDetectedFanMins() {
+		if (!this.moonraker || this.config.enableFans === false) {
+			return;
+		}
+		const now = Date.now();
+		if (this.detectedFan0Min != null && now - this.fanMinRefreshAt < 5 * 60 * 1000) {
+			return;
+		}
+		const param = await this.moonraker.getPrinterParam();
+		if (!param) {
+			return;
+		}
+		const min = Number(param.fan0_min);
+		if (Number.isFinite(min) && min >= 0) {
+			if (this.detectedFan0Min !== min) {
+				this.log.debug(`Detected Creality fan0_min=${min} (UI% remapping for part cooling)`);
+			}
+			this.detectedFan0Min = min;
+			this.fanMinRefreshAt = now;
+		}
+	}
+
+	/**
 	 * @param {unknown} err
 	 */
 	logMoonrakerUnreachable(err) {
@@ -719,7 +768,12 @@ class Creality extends utils.Adapter {
 			await this.setStateAsync('temp.bedTarget', round1(bed.target), true);
 
 			if (this.config.enableFans !== false) {
-				await this.setStateAsync('fans.partCooling', pinToPercent(fan0.value), true);
+				await this.refreshDetectedFanMins();
+				const fan0Min = this.resolveFan0Min();
+				const partPwm = pinToPercent(fan0.value);
+				const partUi = pinToUiPercent(fan0.value, fan0Min);
+				await this.setStateAsync('fans.partCooling', partUi, true);
+				await this.setStateAsync('fans.partCoolingPwm', partPwm, true);
 				await this.setStateAsync('fans.partCoolingRpm', Number(fb.fan0_speed) || 0, true);
 				await this.setStateAsync('fans.hotend', pinToPercent(hotendFan.speed), true);
 				await this.setStateAsync('fans.board', pinToPercent(boardFan.value), true);

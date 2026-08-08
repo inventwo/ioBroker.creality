@@ -49,7 +49,9 @@ Under `creality.<instance>.*` (examples):
 | `currentJob.*` | Progress, file, times, layers, feed/flow, active filament |
 | `info.*` | Model, firmware, hostname, SN, disk, print hours/jobs, errors |
 | `temp.*` | Nozzle, bed, box/chamber |
-| `fans.*` / `cfs.*` | Fans / CFS (optional) |
+| `fans.partCooling` | Part cooling **UI %** (matches slicer / printer display; Creality `fan0_min` remapping) |
+| `fans.partCoolingPwm` | Part cooling **PWM %** (raw hardware duty cycle from Moonraker) |
+| `fans.*` / `cfs.*` | Other fans / CFS (optional) |
 | `control.light` / `sleepMode` / `pause` / `resume` / `stop` | Controls |
 | `webcam.available` | Camera present (read-only; local API cannot power it off on SPARKX i7) |
 | `webcam.streamUrl` | URL for VIS iframe (Creality WebRTC page, default `http://<host>:8000`) |
@@ -70,6 +72,10 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (skvarel) Fixed part cooling fan % to match slicer/display (Creality fan0_min remapping)
+- (skvarel) Added `fans.partCoolingPwm` for raw PWM duty cycle
+
 ### 0.1.4 (2026-08-02)
 - (skvarel) Fixed string state roles for repository object check
 

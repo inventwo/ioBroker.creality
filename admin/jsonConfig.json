@@ -137,6 +137,20 @@
 			"md": 4,
 			"lg": 3,
 			"xl": 3
+		},
+		"fan0Min": {
+			"type": "number",
+			"label": "fan0Min",
+			"help": "fan0Min_help",
+			"newLine": true,
+			"default": -1,
+			"min": -1,
+			"max": 254,
+			"xs": 12,
+			"sm": 4,
+			"md": 3,
+			"lg": 2,
+			"xl": 2
 		}
 	}
 }
