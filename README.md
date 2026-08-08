@@ -72,7 +72,7 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.2.0 (2026-08-08)
 - (skvarel) Fixed part cooling fan % to match slicer/display (Creality fan0_min remapping)
 - (skvarel) Added `fans.partCoolingPwm` for raw PWM duty cycle
 
@@ -94,9 +94,6 @@ If you like our work and would like to support us, we appreciate any donation.
 
 ### 0.1.1 (2026-07-31)
 - (skvarel) Added forum link
-
-### 0.1.0
-- (skvarel) Initial release
 
 ## Older changes
 - [CHANGELOG_OLD.md](CHANGELOG_OLD.md)

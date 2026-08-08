@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "creality",
-    "version": "0.1.4",
+    "version": "0.2.0",
     "news": {
+      "0.2.0": {
+        "en": "Fixed part cooling fan % to match slicer/display (Creality fan0_min remapping)\nAdded `fans.partCoolingPwm` for raw PWM duty cycle",
+        "de": "Festteil-Kühlventilator % entsprechend Slicer/Display (Creality fan0 min remapping)\nHinzugefügt `fans.partCoolingPwm` für rohen PWM Duty Cycle",
+        "ru": "Фиксированная часть охлаждающего вентилятора % для соответствия слайсеру / дисплею (ремапирование Reality fan0 min)\nДобавлено «fans.partCoolingPwm» для необработанного рабочего цикла PWM",
+        "pt": "Ventoinha de arrefecimento de peças fixa % para corresponder ao slicer/display (remapping do fan0 min da Creality)\nAdicionado «fans.partCoolingPwm» para o ciclo de trabalho PWM bruto",
+        "nl": "Fixed part cooling fan % to match slicer/display (Creality fan0 min remapping)\nToegevoegd ",
+        "fr": "Ventilateur de refroidissement de pièce fixe % pour correspondre à trancheur/affichage (ventilateur de qualité 0 min remapping)\nAjout de «fans.partCoolingPwm» pour le cycle d'utilisation brut de la MIP",
+        "it": "Ventola di raffreddamento a parte fissa % per fettine/display di corrispondenza (Rimapping Creality fan0 min)\nAggiunto `fans.partCoolingPwm` per il ciclo di dovere PWM grezzo",
+        "es": "Ventilador de refrigeración de piezas fijas % para emparejar rebanada/display (remapping de Creality fan0 min)\nAñadido \"fans.partCoolingPwm \" para el ciclo de derechos brutos",
+        "pl": "Poprawiony wentylator chłodzący% do dopasowania krajalnica / wyświetlacz (remapping Creality fan0 _ min)\nDodano 'fans.partCoolingPwm' dla cyklu pracy PWM",
+        "uk": "Фіксована частина охолоджуюча вентилятора %, щоб відповідати скибочкам / дисплеєм (Creality fan0 min remapping)\nДодано `fans.partCoolingPwm` для сирого циклу PWM",
+        "zh-cn": "固定部分冷却扇% 以匹配切片机/ 显示器( Creality fan0  min remapping)\n在初级PWM任务周期中加入“fans.partCoolingPwm”"
+      },
       "0.1.4": {
         "en": "Fixed string state roles for repository object check",
         "de": "Feste String-State-Rollen für Repository Object Check",
