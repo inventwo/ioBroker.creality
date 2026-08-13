@@ -95,6 +95,8 @@ If you like our work and would like to support us, we appreciate any donation.
 ### 0.1.1 (2026-07-31)
 - (skvarel) Added forum link
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## Older changes
 - [CHANGELOG_OLD.md](CHANGELOG_OLD.md)
 
