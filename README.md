@@ -72,7 +72,7 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
 	### **WORK IN PROGRESS**
 -->
-### **WORK IN PROGRESS**
+### 0.3.0 (2026-08-14)
 - (skvarel) Fixed button states `control.pause|resume|stop` to use `read: false`
 - (skvarel) Added manufacturer / SPARKX i7 product links to README
 - (skvarel) Modified CFS temperature/humidity roles to `value.temperature` / `value.humidity`
@@ -98,9 +98,6 @@ If you like our work and would like to support us, we appreciate any donation.
 - (skvarel) Fixed TypeScript conflict
 - (skvarel) Fixed ESLint scanning local `backup/` folder
 - (skvarel) Modified Dependabot to ignore TypeScript major updates
-
-### 0.1.1 (2026-07-31)
-- (skvarel) Added forum link
 
 ## Older changes
 - [CHANGELOG_OLD.md](CHANGELOG_OLD.md)
