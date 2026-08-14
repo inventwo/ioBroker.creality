@@ -49,6 +49,8 @@ class Creality extends utils.Adapter {
 		this.lastKlipperState = 'standby';
 		this.moonrakerReachable = true;
 		this.polling = false;
+		this.stopping = false;
+		this.pollIntervalMs = 5000;
 		this.printerHost = '';
 		/** @type {number|null} detected Creality fan0_min (PWM 0–255) */
 		this.detectedFan0Min = null;
@@ -61,6 +63,8 @@ class Creality extends utils.Adapter {
 		const moonrakerPort = Number(this.config.moonrakerPort) || 7125;
 		const crealityWsPort = Number(this.config.crealityWsPort) || 9999;
 		const pollInterval = Math.max(2, Number(this.config.pollInterval) || 5);
+		this.pollIntervalMs = pollInterval * 1000;
+		this.stopping = false;
 		const apiKey = String(this.config.apiKey || '').trim();
 
 		if (!host) {
@@ -106,10 +110,29 @@ class Creality extends utils.Adapter {
 			`Creality adapter started → ${host} (Moonraker :${moonrakerPort}, Creality-WS :${crealityWsPort}, poll ${pollInterval}s)`,
 		);
 
-		await this.poll();
-		this.pollTimer = this.setInterval(() => {
-			this.poll().catch(err => this.logMoonrakerUnreachable(err));
-		}, pollInterval * 1000);
+		await this.poll().catch(err => this.logMoonrakerUnreachable(err));
+		this.scheduleNextPoll();
+	}
+
+	/**
+	 * Schedule the next Moonraker poll after the previous one finished (setTimeout chain).
+	 *
+	 * @returns {void}
+	 */
+	scheduleNextPoll() {
+		if (this.stopping) {
+			return;
+		}
+		if (this.pollTimer) {
+			this.clearTimeout(this.pollTimer);
+			this.pollTimer = null;
+		}
+		this.pollTimer = this.setTimeout(() => {
+			this.pollTimer = null;
+			this.poll()
+				.catch(err => this.logMoonrakerUnreachable(err))
+				.finally(() => this.scheduleNextPoll());
+		}, this.pollIntervalMs);
 	}
 
 	/**
@@ -117,8 +140,9 @@ class Creality extends utils.Adapter {
 	 */
 	onUnload(callback) {
 		try {
+			this.stopping = true;
 			if (this.pollTimer) {
-				this.clearInterval(this.pollTimer);
+				this.clearTimeout(this.pollTimer);
 				this.pollTimer = null;
 			}
 			if (this.crealityWs) {
@@ -215,6 +239,10 @@ class Creality extends utils.Adapter {
 			role: common.role || defaultRole,
 			...common,
 		};
+		// Buttons are write-only events per ioBroker role spec
+		if (fullCommon.role === 'button' && common.read === undefined) {
+			fullCommon.read = false;
+		}
 		if (!existing) {
 			await this.setObjectNotExistsAsync(id, {
 				type: 'state',
@@ -242,6 +270,12 @@ class Creality extends utils.Adapter {
 		}
 		if (fullCommon.type && existing.common && existing.common.type !== fullCommon.type) {
 			patch.type = fullCommon.type;
+		}
+		if (existing.common && existing.common.read !== fullCommon.read) {
+			patch.read = fullCommon.read;
+		}
+		if (existing.common && existing.common.write !== fullCommon.write) {
+			patch.write = fullCommon.write;
 		}
 		if (Object.keys(patch).length) {
 			await this.extendObjectAsync(id, { common: patch });
@@ -289,7 +323,7 @@ class Creality extends utils.Adapter {
 			['progress', 0, { name: 'Progress %', type: 'number', unit: '%' }],
 			['printName', '', { name: 'Print file', type: 'string' }],
 			['remainingText', '00:00:00', { name: 'Remaining time', type: 'string' }],
-			['finishAt', '', { name: 'Finish at', type: 'string' }],
+			['finishAt', '', { name: 'Finish at (local YYYY-MM-DD HH:MM)', type: 'string' }],
 			['printTime', '00:00:00', { name: 'Elapsed print time', type: 'string' }],
 			['layer', 0, { name: 'Current layer', type: 'number' }],
 			['totalLayers', 0, { name: 'Total layers', type: 'number' }],
@@ -359,8 +393,12 @@ class Creality extends utils.Adapter {
 				['type', '', { name: 'CFS type', type: 'string' }],
 				['state', '', { name: 'CFS state', type: 'string' }],
 				['enable', false, { name: 'CFS enabled', type: 'boolean' }],
-				['temperature', 0, { name: 'CFS temperature °C', type: 'number', unit: '°C' }],
-				['humidity', 0, { name: 'CFS humidity %', type: 'number', unit: '%' }],
+				[
+					'temperature',
+					0,
+					{ name: 'CFS temperature °C', type: 'number', unit: '°C', role: 'value.temperature' },
+				],
+				['humidity', 0, { name: 'CFS humidity %', type: 'number', unit: '%', role: 'value.humidity' }],
 				['light', false, { name: 'CFS box LED', type: 'boolean', write: true, role: 'switch' }],
 			]) {
 				await this.ensureState(`cfs.${id}`, init, common);
@@ -428,6 +466,7 @@ class Creality extends utils.Adapter {
 					name,
 					type: 'boolean',
 					write: true,
+					read: false,
 					role: 'button',
 				});
 			}

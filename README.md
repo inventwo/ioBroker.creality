@@ -17,14 +17,14 @@
 
 ## What this adapter does
 
-Connects Creality Klipper printers (primary target: **SPARKX i7** with CFS lite) to ioBroker via two local APIs:
+Connects Creality Klipper printers (primary target: **[SPARKX i7](https://store.creality.com/products/sparkx-i7-3d-printer)** with CFS lite) to ioBroker via two local APIs:
 
 1. **Moonraker HTTP** (default port `7125`) — print stats, temperatures, fans, CFS filament box, G-code
 2. **Creality WebSocket** (default port `9999`) — toolhead LED, pause / resume / stop, leveling / self-test UI state, remaining time (`printLeftTime`)
 
 Moonraker alone is not enough for Creality UI states (e.g. leveling while Klipper still reports `standby`) or the toolhead light.
 
-Other Creality Klipper models may work best-effort; only SPARKX i7 has been tested so far.
+Manufacturer: [Creality](https://www.creality.com/). Other Creality Klipper models may work best-effort; only SPARKX i7 has been tested so far.
 
 ## Configuration
 
@@ -72,6 +72,13 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (skvarel) Fixed button states `control.pause|resume|stop` to use `read: false`
+- (skvarel) Added manufacturer / SPARKX i7 product links to README
+- (skvarel) Modified CFS temperature/humidity roles to `value.temperature` / `value.humidity`
+- (skvarel) Modified Moonraker poll loop to use `setTimeout` chain instead of `setInterval`
+- (skvarel) Modified `currentJob.finishAt` to include local date (`YYYY-MM-DD HH:MM`)
+
 ### 0.2.0 (2026-08-08)
 - (skvarel) Fixed part cooling fan % to match slicer/display (Creality fan0_min remapping)
 - (skvarel) Added `fans.partCoolingPwm` for raw PWM duty cycle
