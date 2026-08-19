@@ -1,30 +1,33 @@
-# Dependabot will run on day 25 of each month at 01:38 (Europe/Berlin timezone)
+# Dependabot will run on day 19 of each month at 03:36 (Europe/Berlin timezone)
 version: 2
 updates:
-  - package-ecosystem: npm
-    directory: "/"
+
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: cron
-      timezone: Europe/Berlin
-      cronjob: "38 1 25 * *"
+      interval: 'cron'
+      timezone: 'Europe/Berlin'
+      cronjob: '38 1 25 * *'
     open-pull-requests-limit: 15
     cooldown:
       default-days: 7
     assignees:
-      - inventwo
-    versioning-strategy: increase
+      - 'inventwo'
+    versioning-strategy: 'increase'
     ignore:
-      - dependency-name: "@types/node"
-        update-types: ["version-update:semver-major"]
-      - dependency-name: "typescript"
-        update-types: ["version-update:semver-major"]
+      - dependency-name: '@types/node'
+        update-types:
+          - 'version-update:semver-major'
+      - dependency-name: 'typescript'
+        update-types:
+          - 'version-update:semver-major'
 
-  - package-ecosystem: github-actions
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: cron
-      timezone: Europe/Berlin
-      cronjob: "38 1 25 * *"
+      interval: 'cron'
+      timezone: 'Europe/Berlin'
+      cronjob: '38 1 25 * *'
     open-pull-requests-limit: 15
     assignees:
-      - inventwo
+      - 'inventwo'
