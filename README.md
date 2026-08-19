@@ -99,6 +99,8 @@ If you like our work and would like to support us, we appreciate any donation.
 - (skvarel) Fixed ESLint scanning local `backup/` folder
 - (skvarel) Modified Dependabot to ignore TypeScript major updates
 
+[Older changelogs can be found there](CHANGELOG_OLD.md)
+
 ## Older changes
 - [CHANGELOG_OLD.md](CHANGELOG_OLD.md)
 
