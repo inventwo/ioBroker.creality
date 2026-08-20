@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "creality",
-    "version": "0.3.0",
+    "version": "0.4.0",
     "news": {
+      "0.4.0": {
+        "en": "Adapter requires admin >= 7.8.23 now.",
+        "de": "Der Adapter benötigt jetzt Administratorrechte ab Version 7.8.23.",
+        "ru": "Для работы адаптера теперь требуется версия admin >= 7.8.23.",
+        "pt": "O adaptador agora requer o admin versão >= 7.8.23.",
+        "nl": "De adapter vereist nu admin >= 7.8.23.",
+        "fr": "L'adaptateur nécessite désormais une version d'administrateur supérieure ou égale à 7.8.23.",
+        "it": "L'adattatore ora richiede admin >= 7.8.23.",
+        "es": "El adaptador ahora requiere admin >= 7.8.23.",
+        "pl": "Adapter wymaga teraz uprawnień administratora >= 7.8.23.",
+        "uk": "Адаптер тепер вимагає адміністратора версії >= 7.8.23.",
+        "zh-cn": "适配器现在需要管理员版本 >= 7.8.23。"
+      },
       "0.3.0": {
         "en": "Fixed button states `control.pause|resume|stop` to use `read: false`\nAdded manufacturer / SPARKX i7 product links to README\nModified CFS temperature/humidity roles to `value.temperature` / `value.humidity`\nModified Moonraker poll loop to use `setTimeout` chain instead of `setInterval`\nModified `currentJob.finishAt` to include local date (`YYYY-MM-DD HH:MM`)",
         "de": "Die festen Schaltflächenzustände `control.pause|resume|stop` verwenden nun `read: false`.\nHersteller-/SPARKX i7-Produktlinks zur README-Datei hinzugefügt\nDie CFS-Temperatur-/Feuchtigkeitsrollen wurden in `value.temperature` / `value.humidity` geändert.\nDie Moonraker-Abfrageschleife wurde so angepasst, dass sie die `setTimeout`-Kette anstelle von `setInterval` verwendet.\nDie Variable `currentJob.finishAt` wurde so geändert, dass sie das lokale Datum (`YYYY-MM-DD HH:MM`) enthält.",
@@ -80,19 +93,6 @@
         "pl": "Dodano link forum",
         "uk": "Додано посилання на форум",
         "zh-cn": "添加论坛链接"
-      },
-      "0.1.0": {
-        "en": "initial release",
-        "de": "Erstveröffentlichung",
-        "ru": "Начальная версия",
-        "pt": "lançamento inicial",
-        "nl": "Eerste uitgave",
-        "fr": "Première version",
-        "it": "Versione iniziale",
-        "es": "Versión inicial",
-        "pl": "Pierwsze wydanie",
-        "uk": "Початкова версія",
-        "zh-cn": "首次出版"
       }
     },
     "titleLang": {
