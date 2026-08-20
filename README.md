@@ -72,6 +72,10 @@ If you like our work and would like to support us, we appreciate any donation.
 <!--
 	### **WORK IN PROGRESS**
 -->
+
+### **WORK IN PROGRESS**
+- (ioBroker-Bot) Adapter requires admin >= 7.8.23 now.
+
 ### 0.3.0 (2026-08-14)
 - (skvarel) Fixed button states `control.pause|resume|stop` to use `read: false`
 - (skvarel) Added manufacturer / SPARKX i7 product links to README
