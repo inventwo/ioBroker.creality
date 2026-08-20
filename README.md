@@ -7,7 +7,7 @@
 [![NPM Version](https://nodei.co/npm/iobroker.creality.svg?style=shields&data=v,u,d&color=orange)](https://www.npmjs.com/package/iobroker.creality)
 [![Downloads](https://img.shields.io/npm/dm/iobroker.creality.svg)](https://www.npmjs.com/package/iobroker.creality)
 
-[![COMMUNITY](https://img.shields.io/badge/community%20-ioBroker%20|%20forum-blue.svg)](https://forum.iobroker.net/topic/85082/test-adapter-creality-alpha)
+[![COMMUNITY](https://img.shields.io/badge/community%20-ioBroker%20|%20forum-blue.svg)](https://forum.iobroker.net/topic/85199/test-adapter-creality-latest)
 [![MAINTAINER](https://img.shields.io/badge/maintainer-skvarel%20@%20inventwo-yellowgreen.svg)](https://github.com/skvarel)
 [![AI](https://img.shields.io/badge/ai%20assisted-cursor-blue.svg)](https://github.com/inventwo/ioBroker.creality/blob/main/.cursor/iobroker-adapter.mdc)
 
