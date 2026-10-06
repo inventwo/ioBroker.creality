@@ -12,6 +12,8 @@ const {
 	CFS_SLOTS,
 	SELF_TEST_STEP_STATES,
 	isUnreachableError,
+	isTransientMoonrakerError,
+	isKlipperJobActive,
 	formatHms,
 	formatFinishAt,
 	rawName,
@@ -52,7 +54,7 @@ class Creality extends utils.Adapter {
 		this.stopping = false;
 		this.pollIntervalMs = 5000;
 		this.printerHost = '';
-		/** @type {number|null} detected Creality fan0_min (PWM 0–255) */
+		/** detected Creality fan0_min (PWM 0–255) */
 		this.detectedFan0Min = null;
 		this.fanMinRefreshAt = 0;
 	}
@@ -306,7 +308,7 @@ class Creality extends utils.Adapter {
 			['errorCode', 0, { name: 'Error code', type: 'number' }],
 			['error', '', { name: 'Error message', type: 'string' }],
 		]) {
-			await this.ensureState(`info.${id}`, init, /** @type {ioBroker.StateCommon} */ (common));
+			await this.ensureState(`info.${id}`, init, common);
 		}
 
 		const root = [
@@ -337,7 +339,7 @@ class Creality extends utils.Adapter {
 			['filamentUsed', 0, { name: 'Filament used (job)', type: 'number', unit: 'g' }],
 			['filamentLength', 0, { name: 'Filament length (job)', type: 'number', unit: 'mm' }],
 		]) {
-			await this.ensureState(`currentJob.${id}`, init, /** @type {ioBroker.StateCommon} */ (common));
+			await this.ensureState(`currentJob.${id}`, init, common);
 		}
 
 		for (const id of [
@@ -539,6 +541,24 @@ class Creality extends utils.Adapter {
 
 	publishProgressFromCreality() {
 		const ct = (this.crealityWs && this.crealityWs.telem) || {};
+		const fname = ct.printFileName ? String(ct.printFileName) : '';
+		const ui = mapUiState(this.lastKlipperState, ct);
+		const activeUi =
+			ui === 'printing' || ui === 'paused' || ui === 'leveling' || ui === 'self-testing' || ui === 'preparing';
+		// No active file in Creality telem → clear job (also after reboot / finished print).
+		if (!fname) {
+			this.setState('currentJob.progress', 0, true);
+			this.setState('currentJob.printName', '', true);
+			this.setState('currentJob.remainingText', '00:00:00', true);
+			this.setState('currentJob.finishAt', '', true);
+			this.setState('currentJob.printTime', '00:00:00', true);
+			this.setState('currentJob.layer', 0, true);
+			this.setState('currentJob.totalLayers', 0, true);
+			this.setState('currentJob.speed', 0, true);
+			this.setState('currentJob.flow', 0, true);
+			return;
+		}
+
 		let progress = Number(ct.printProgress != null ? ct.printProgress : ct.dProgress);
 		if (Number.isFinite(progress) && progress >= 0) {
 			this.setState('currentJob.progress', Math.round(progress * 10) / 10, true);
@@ -548,12 +568,10 @@ class Creality extends utils.Adapter {
 		if (!Number.isFinite(remainingSec) || remainingSec < 0) {
 			remainingSec = 0;
 		}
-		const ui = mapUiState(this.lastKlipperState, ct);
-		if (ui === 'printing' || ui === 'paused' || ui === 'leveling' || ui === 'self-testing' || ui === 'preparing') {
+		if (activeUi) {
 			this.setState('currentJob.remainingText', formatHms(remainingSec), true);
 			this.setState('currentJob.finishAt', formatFinishAt(remainingSec), true);
 		}
-		const fname = ct.printFileName ? String(ct.printFileName) : '';
 		if (fname) {
 			this.setState('currentJob.printName', rawName(fname), true);
 		}
@@ -687,11 +705,12 @@ class Creality extends utils.Adapter {
 	 * @param {unknown} err
 	 */
 	logMoonrakerUnreachable(err) {
-		const errObj = /** @type {{message?: string}|null|undefined} */ (err);
+		const errObj = err;
 		const msg = errObj && errObj.message ? errObj.message : String(err);
-		if (isUnreachableError(err)) {
+		if (isUnreachableError(err) || isTransientMoonrakerError(err)) {
 			if (this.moonrakerReachable) {
-				this.log.info(`Moonraker unreachable: ${msg}`);
+				const label = isTransientMoonrakerError(err) ? 'Moonraker not ready' : 'Moonraker unreachable';
+				this.log.info(`${label}: ${msg}`);
 				this.moonrakerReachable = false;
 			}
 			return;
@@ -719,23 +738,27 @@ class Creality extends utils.Adapter {
 			const vs = st.virtual_sdcard || {};
 			const ex = st.extruder || {};
 			const bed = st.heater_bed || {};
-			const fb = st.fan_feedback || {};
-			const fan0 = st['output_pin fan0'] || {};
-			const boardFan = st['output_pin board_fan'] || {};
-			const eFan = st['output_pin e_fan'] || {};
-			const hotendFan = st['heater_fan hotend_fan'] || {};
 
-			/** @type {{
-			 *   type: string,
-			 *   state: string,
-			 *   enable: boolean,
-			 *   temperature: number|null,
-			 *   humidity: number|null,
-			 *   activeSlot: string,
-			 *   activeColor: string,
-			 *   activeMaterial: string,
-			 *   slots: Record<string, any>,
-			 * }} */
+			let fanSt = {};
+			if (this.config.enableFans !== false) {
+				try {
+					const fanData = await this.moonraker.queryFans();
+					fanSt = (fanData && fanData.result && fanData.result.status) || {};
+				} catch (e) {
+					if (!isUnreachableError(e) && !isTransientMoonrakerError(e)) {
+						this.log.warn(`Fans poll: ${e.message}`);
+					}
+				}
+			}
+			const fb = fanSt.fan_feedback || {};
+			const fan0 = fanSt['output_pin fan0'] || {};
+			const boardFan = fanSt['output_pin board_fan'] || {};
+			const eFan = fanSt['output_pin e_fan'] || {};
+			const hotendFan = fanSt['heater_fan hotend_fan'] || {};
+
+			/**
+			 * }}
+			 */
 			let cfs = {
 				type: '',
 				state: '',
@@ -753,7 +776,7 @@ class Creality extends utils.Adapter {
 					const cst = (cfsData && cfsData.result && cfsData.result.status) || {};
 					cfs = parseCfs(cst.box, cst.filament_inventory_manager, cst.filament_rack);
 				} catch (e) {
-					if (!isUnreachableError(e)) {
+					if (!isUnreachableError(e) && !isTransientMoonrakerError(e)) {
 						this.log.warn(`CFS poll: ${e.message}`);
 					}
 				}
@@ -761,11 +784,16 @@ class Creality extends utils.Adapter {
 
 			const state = ps.state || 'unknown';
 			const filename = ps.filename || '';
+			const jobActive = isKlipperJobActive(state);
 			let progress01 = Number(ds.progress != null ? ds.progress : vs.progress != null ? vs.progress : 0);
 			const telem = (this.crealityWs && this.crealityWs.telem) || {};
 			const ctProg = Number(telem.printProgress != null ? telem.printProgress : telem.dProgress);
-			if ((!progress01 || progress01 <= 0) && Number.isFinite(ctProg) && ctProg > 0) {
+			// Only fill gaps while Moonraker itself reports an active job — never overlay idle 0% with stale WS %.
+			if (jobActive && (!progress01 || progress01 <= 0) && Number.isFinite(ctProg) && ctProg > 0) {
 				progress01 = ctProg / 100;
+			}
+			if (!jobActive && !filename) {
+				progress01 = 0;
 			}
 			const progress = Math.round(progress01 * 1000) / 10;
 			const printDuration = Number(ps.print_duration) || 0;
@@ -775,7 +803,7 @@ class Creality extends utils.Adapter {
 				try {
 					this.estimatedTime = await this.moonraker.getEstimatedTime(filename);
 				} catch (e) {
-					if (!isUnreachableError(e)) {
+					if (!isUnreachableError(e) && !isTransientMoonrakerError(e)) {
 						this.log.warn(`Metadata: ${e.message}`);
 					}
 					this.estimatedTime = 0;
@@ -788,8 +816,11 @@ class Creality extends utils.Adapter {
 
 			let remainingSec = calcRemaining(state, progress01, printDuration, this.estimatedTime);
 			const ctLeft = Number(telem.printLeftTime);
-			if ((!remainingSec || remainingSec <= 0) && Number.isFinite(ctLeft) && ctLeft > 0) {
+			if (jobActive && (!remainingSec || remainingSec <= 0) && Number.isFinite(ctLeft) && ctLeft > 0) {
 				remainingSec = ctLeft;
+			}
+			if (!jobActive && !filename) {
+				remainingSec = 0;
 			}
 
 			await this.setStateAsync('info.connection', true, true);
