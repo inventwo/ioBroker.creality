@@ -57,6 +57,8 @@ class Creality extends utils.Adapter {
 		/** detected Creality fan0_min (PWM 0–255) */
 		this.detectedFan0Min = null;
 		this.fanMinRefreshAt = 0;
+		/** @type {boolean|null} null = unknown until Creality telem provides maxBoxTemp */
+		this.chamberHasHeater = null;
 	}
 
 	async onReady() {
@@ -365,7 +367,6 @@ class Creality extends utils.Adapter {
 			['nozzleTarget', 'Nozzle target °C'],
 			['bedTemp', 'Bed actual °C'],
 			['bedTarget', 'Bed target °C'],
-			['box', 'Box / chamber °C'],
 		]) {
 			await this.ensureState(`temp.${id}`, 0, {
 				name,
@@ -374,6 +375,7 @@ class Creality extends utils.Adapter {
 				role: 'value.temperature',
 			});
 		}
+		// temp.box only if Creality reports a chamber heater (maxBoxTemp > 0) — see syncChamberTemp()
 
 		if (this.config.enableFans !== false) {
 			await this.ensureChannel('fans', 'Fans');
@@ -651,6 +653,40 @@ class Creality extends utils.Adapter {
 		this.setState('info.errorCode', Number.isFinite(errCode) ? errCode : 0, true);
 		this.setState('info.error', err.value != null ? String(err.value) : '', true);
 
+		this.syncChamberTemp();
+	}
+
+	/**
+	 * Creality printers without chamber heater report `maxBoxTemp: 0`.
+	 * Only then omit `temp.box`; with heater create/update from `boxTemp`.
+	 */
+	syncChamberTemp() {
+		const ct = (this.crealityWs && this.crealityWs.telem) || {};
+		if (ct.maxBoxTemp === undefined) {
+			return;
+		}
+		const maxBox = Number(ct.maxBoxTemp);
+		const hasChamber = Number.isFinite(maxBox) && maxBox > 0;
+		if (!hasChamber) {
+			if (this.chamberHasHeater !== false) {
+				this.chamberHasHeater = false;
+				this.delObject('temp.box', err => {
+					if (err) {
+						this.log.debug(`temp.box remove: ${err.message}`);
+					}
+				});
+			}
+			return;
+		}
+		if (this.chamberHasHeater !== true) {
+			this.chamberHasHeater = true;
+			this.ensureState('temp.box', 0, {
+				name: 'Box / chamber °C',
+				type: 'number',
+				unit: '°C',
+				role: 'value.temperature',
+			}).catch(e => this.log.warn(`temp.box ensure: ${e.message}`));
+		}
 		const box = round1(ct.boxTemp);
 		if (box != null) {
 			this.setState('temp.box', box, true);
