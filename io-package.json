@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "creality",
-    "version": "0.4.1",
+    "version": "0.5.0",
     "news": {
+      "0.5.0": {
+        "en": "Fixed stale `currentJob.progress` after finished print / Moonraker restart (Creality WS fallback)\nModified Moonraker fan query to be optional so missing fan objects cannot 404 the whole poll\nModified `temp.box` to appear only when the printer reports a chamber heater (`maxBoxTemp > 0`)\nFixed `currentJob.*` not clearing after cancel/complete (Creality keeps filename + last progress)",
+        "de": "Behoben: `CurrentJob.Progress` nach Druck/Moonraker-Neustart (Creality WS Fallback)\nMoonraker-Fan-Abfrage ist optional, fehlende Fanobjekte können nicht 404\n`Temp.Box` erscheint nun nur, wenn der Drucker eine Kammerheizung meldet (`MaxBoxTemp > 0`)\nFix: `CurrentJob.*` löscht nach Abbrechen/Abschluss nicht (Creality behält Dateiname und letzten Fortschritt)",
+        "ru": "Исправлено статическое состояние `CurrentJob.Progress` после завершения печати/перезапуска Moonraker (резервный вариант Creality WS)\nМодифицированный запрос фанатов Moonraker стал необязательным, поэтому отсутствующие объекты фанатов не могут быть 404 за весь опрос\nИзменено значение `temp.box`, которое отображается только тогда, когда принтер сообщает о нагреве камеры (`MaxBoxTemp > 0`)\nИсправлена ошибка `CurrentJob.*`, которая не удалялась после отмены/завершения (Creality сохраняет имя файла и последний прогресс)",
+        "pt": "Corrigido o `currentJob.progress` após o término da impressão/reinício do Moonraker\nModificou a consulta de fãs do Moonraker para ser opcional.\nAlterado para aparecer somente quando a impressora relata um aquecedor (`MaxBoxTemp > 0`)\nCorrigido o erro `CurrentJob.*` após cancelar/concluir (Creality mantém nome e último progresso)",
+        "nl": "Stale `CurrentJob.Progress` hersteld na het afdrukken of opnieuw opstarten van Moonraker (terugval van Creality WS)\nMoonraker-vraag voor fans aangepast zodat ontbrekende fanobjecten niet de hele peiling kunnen doen\n`temp.box` is aangepast zodat deze alleen verschijnt wanneer de printer een kamerverwarming meldt (`MaxBoxTemp > 0`)\nHet probleem met `CurrentJob.*` werd niet gewist na annuleren/voltooien (Creality bewaart de bestandsnaam + de laatste voortgang)",
+        "fr": "CurrentJob.Progress a été corrigé à la fin de l'impression ou du redémarrage de Moonraker (Creality WS Fallback)\nLa requête des fans de Moonraker est désormais facultative. L'absence d'objets ne peut pas 404\n« Temp.box » a été modifié pour n'apparaître que lorsque l'imprimante signale un chauffage (« MaxBoxTemp > 0 »)\nCorrigé « CurrentJob* » qui ne s'efface pas une fois annulé (Creality garde le nom du fichier et sa dernière progression)",
+        "it": "Risolto `CurrentJob.Progress` obsoleto dopo la stampa/riavvio Moonraker (fallback Creality WS)\nModificata la fan query di Moonraker come opzionale, non può 404 l'intero sondaggio\n`temp.box` modificato solo quando la stampante segnala un riscaldatore (`MaxboxTemp > 0`)\nRisolto il problema con CurrentJob.*` dopo l'annullamento (Creality mantiene nome file + ultimo avanzamento)",
+        "es": "Se corrigió el retraso de `CurrentJob.Progres` al terminar de imprimir/Moonraker (alternativa de Creality WS)\nModificó la consulta de Moonraker para que fuera opcional para que falten objetos no pueda fallar en toda la encuesta\nSe modificó `temp.box` para que solo aparezca cuando la impresora informe de un calefactor (`MaxBoxTemp > 0')\nSe corrigió `CurrentJob.*` que no se borra tras cancelar/completar (Creality guarda el nombre del archivo y el último progreso)",
+        "pl": "Naprawiono nieaktualne `CurrentJob.Progress` po zakończeniu drukowania/ponownego uruchomienia Moonraker (rezerwa Creality WS)\nZmodyfikowane zapytanie fanów Moonraker jako opcjonalne, więc brakujące obiekty wentylatora nie mogą 404 całej ankiety\nZmodyfikowany „temp.box”, aby pojawiał się tylko wtedy, gdy drukarka zgłasza nagrzewnicę komorową („MaxboxTemp > 0”)\nNaprawiono, że `CurrentJob.*` nie usuwa się po anulowaniu/zakończeniu (Creality zachowuje nazwę pliku+ostatni postęp)",
+        "uk": "Виправлено нестарий `CurrentJob.Progress` після завершення друку/перезавантаження Moonraker (резервний варіант Creality WS)\nМодифікований запит фанатів Moonraker на необов'язковий, тому відсутні об'єкти фанатів не можуть 404 усе опитування\nЗмінено `temp.box`, щоб відображатися лише тоді, коли принтер повідомляє про нагрівач камери (`MaxBoxTemp> 0`)\nВиправлено `CurrentJob.*` не очищається після скасування/завершення (Creality зберігає назву файлу+останній прогрес)",
+        "zh-cn": "修复了打印完成/重启 Moonraker 后过时的 `currentJob.progress` 问题（Creality WS 后备）\n将 Moonraker 粉丝查询修改为可选，因此缺少的粉丝对象无法在整个投票中进行 404\n修改了 temp.box，使其仅在打印机报告腔室加热器时出现（`maxboxTemp > 0`）\n修复了 `currentJob.*` 在取消/完成后无法清除的问题（Creality 保留文件名 + 上次进度）"
+      },
       "0.4.1": {
         "en": "Fixed `currentJob.filament*` for external spool holder (`filament_rack`) when CFS is not active",
         "de": "Behoben: `currentJob.filament*` für externen Spulenhalter (`filament_rack`) bei deaktiviertem CFS.",
@@ -80,19 +93,6 @@
         "pl": "Stałe uruchomienie CI do korzystania z Node.js 24\nNaprawiono wcięcie admin jsonConfig\nZmodyfikowane automatyczne połączenie Dependabot z nowym obiegiem pracy / działaniem joBrokera\nZmodyfikowany schemat dawkowania leku Dependabot do cron\nZmodyfikowane narzędzie TypeScript do węzła 22\nDodano zasady kursora do repozytorium",
         "uk": "Виправлено розгортання CI для використання Node.js 24\nВиправлено помилку адміністратора\nМодифікована автозахоплення залежно від нового ioBroker\nМодифікований графік залежно від корони\nМодифікований інструмент TypeScript для Node 22\nДодано правила оформлення до репозиторій",
         "zh-cn": "使用节点的固定部署 CI 24\n固定管理员json 缩进\n适应新的ioBroker工作流程/行动\n已修改的依附时间表\n修改类型脚本工具到节点 22\n添加光标规则到仓库"
-      },
-      "0.1.2": {
-        "en": "Fixed TypeScript conflict\nFixed ESLint scanning local `backup/` folder\nModified Dependabot to ignore TypeScript major updates",
-        "de": "Fixed TypeScript Konflikt\nFix ESLint scannt lokalen `Backup/`-Ordner\nModifiziertes Dependabot zu ignorieren TypeScript große Updates",
-        "ru": "Конфликт TypeScript\nИсправленная ESLint сканирующая локальную папку «backup/»\nМодифицированный Dependabot проигнорирует основные обновления TypeScript",
-        "pt": "Conflito do tipo fixoScript\nPasta local de 'backup/' do ESLint fixo\nDependabot modificado para ignorar as principais atualizações do TypeScript",
-        "nl": "Fixed TypeScript conflict\nVaste ESLint scannen van lokale map voor back-ups/\nAangepaste dependabot om belangrijke updates van TypeScript te negeren",
-        "fr": "Correction du conflit TypeScript\nCorrection du dossier local `backup/` de numérisation ESLint\nModifié Dependabot pour ignorer les mises à jour majeures de TypeScript",
-        "it": "Risolto conflitto TypeScript\nRisolto ESLint scansione locale `backup/` cartella\nModificato Dependabot per ignorare gli aggiornamenti principali di TypeScript",
-        "es": "Conflicto tipo script fijo\nEscaneo fijo ESLint local `backup/` carpeta\nDependabot modificado para ignorar las actualizaciones principales de TipoScript",
-        "pl": "Naprawiono konflikt TypeScript\nNaprawiono skanowanie ESLint lokalnego folderu 'backup /'\nZmodyfikowany Dependabot ignoruje główne aktualizacje TypeScript",
-        "uk": "Виправлений конфлікт TypeScript\nВиправлено ESLint сканування локальної папки `backup/`\nМодифікований залежно від того, щоб ігнорувати TypeScript основні оновлення",
-        "zh-cn": "固定类型脚本冲突\n固定的 ESLint 扫描本地“ 备份/” 文件夹\n已修改的依赖以忽略 TypeScript 主要更新"
       }
     },
     "titleLang": {

@@ -1,4 +1,7 @@
 # Older changes
+## 0.1.4 (2026-08-02)
+- (skvarel) Fixed string state roles for repository object check
+
 ## 0.1.3 (2026-07-31)
 - (skvarel) Fixed deploy CI to use Node.js 24
 - (skvarel) Fixed admin jsonConfig indentation
