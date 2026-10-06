@@ -76,6 +76,7 @@ If you like our work and would like to support us, we appreciate any donation.
 - (skvarel) Fixed stale `currentJob.progress` after finished print / Moonraker restart (Creality WS fallback)
 - (skvarel) Modified Moonraker fan query to be optional so missing fan objects cannot 404 the whole poll
 - (skvarel) Modified `temp.box` to appear only when the printer reports a chamber heater (`maxBoxTemp > 0`)
+- (skvarel) Fixed `currentJob.*` not clearing after cancel/complete (Creality keeps filename + last progress)
 
 ### 0.4.1 (2026-08-25)
 - (skvarel) Fixed `currentJob.filament*` for external spool holder (`filament_rack`) when CFS is not active

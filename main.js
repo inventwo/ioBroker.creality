@@ -14,6 +14,7 @@ const {
 	isUnreachableError,
 	isTransientMoonrakerError,
 	isKlipperJobActive,
+	isJobEnded,
 	formatHms,
 	formatFinishAt,
 	rawName,
@@ -547,17 +548,9 @@ class Creality extends utils.Adapter {
 		const ui = mapUiState(this.lastKlipperState, ct);
 		const activeUi =
 			ui === 'printing' || ui === 'paused' || ui === 'leveling' || ui === 'self-testing' || ui === 'preparing';
-		// No active file in Creality telem → clear job (also after reboot / finished print).
-		if (!fname) {
-			this.setState('currentJob.progress', 0, true);
-			this.setState('currentJob.printName', '', true);
-			this.setState('currentJob.remainingText', '00:00:00', true);
-			this.setState('currentJob.finishAt', '', true);
-			this.setState('currentJob.printTime', '00:00:00', true);
-			this.setState('currentJob.layer', 0, true);
-			this.setState('currentJob.totalLayers', 0, true);
-			this.setState('currentJob.speed', 0, true);
-			this.setState('currentJob.flow', 0, true);
+		// Creality keeps filename/progress after abort — clear whenever the job has ended.
+		if (!fname || isJobEnded(this.lastKlipperState, ui)) {
+			this.clearCurrentJobLive();
 			return;
 		}
 
@@ -574,9 +567,7 @@ class Creality extends utils.Adapter {
 			this.setState('currentJob.remainingText', formatHms(remainingSec), true);
 			this.setState('currentJob.finishAt', formatFinishAt(remainingSec), true);
 		}
-		if (fname) {
-			this.setState('currentJob.printName', rawName(fname), true);
-		}
+		this.setState('currentJob.printName', rawName(fname), true);
 
 		const jobSec = Number(ct.printJobTime);
 		if (Number.isFinite(jobSec) && jobSec >= 0) {
@@ -608,6 +599,25 @@ class Creality extends utils.Adapter {
 		if (ct.usedMaterialLength != null) {
 			this.setState('currentJob.filamentLength', Number(ct.usedMaterialLength) || 0, true);
 		}
+	}
+
+	/**
+	 * Reset live job telemetry (not CFS active-filament fields).
+	 */
+	clearCurrentJobLive() {
+		this.setState('currentJob.progress', 0, true);
+		this.setState('currentJob.printName', '', true);
+		this.setState('currentJob.remainingText', '00:00:00', true);
+		this.setState('currentJob.finishAt', '', true);
+		this.setState('currentJob.printTime', '00:00:00', true);
+		this.setState('currentJob.layer', 0, true);
+		this.setState('currentJob.totalLayers', 0, true);
+		this.setState('currentJob.speed', 0, true);
+		this.setState('currentJob.flow', 0, true);
+		this.setState('currentJob.feedrate', 0, true);
+		this.setState('currentJob.flowrate', 0, true);
+		this.setState('currentJob.filamentUsed', 0, true);
+		this.setState('currentJob.filamentLength', 0, true);
 	}
 
 	publishDeviceInfoFromCreality() {
@@ -828,7 +838,7 @@ class Creality extends utils.Adapter {
 			if (jobActive && (!progress01 || progress01 <= 0) && Number.isFinite(ctProg) && ctProg > 0) {
 				progress01 = ctProg / 100;
 			}
-			if (!jobActive && !filename) {
+			if (!jobActive) {
 				progress01 = 0;
 			}
 			const progress = Math.round(progress01 * 1000) / 10;
@@ -855,18 +865,28 @@ class Creality extends utils.Adapter {
 			if (jobActive && (!remainingSec || remainingSec <= 0) && Number.isFinite(ctLeft) && ctLeft > 0) {
 				remainingSec = ctLeft;
 			}
-			if (!jobActive && !filename) {
+			if (!jobActive) {
 				remainingSec = 0;
 			}
 
 			await this.setStateAsync('info.connection', true, true);
 			this.logMoonrakerReachableAgain();
 			this.publishUiState(state);
-			this.publishProgressFromCreality();
-			await this.setStateAsync('currentJob.progress', progress, true);
-			await this.setStateAsync('currentJob.printName', rawName(filename), true);
-			await this.setStateAsync('currentJob.remainingText', formatHms(remainingSec), true);
-			await this.setStateAsync('currentJob.finishAt', formatFinishAt(remainingSec), true);
+			const ui = mapUiState(state, telem);
+			if (jobActive) {
+				this.publishProgressFromCreality();
+				await this.setStateAsync('currentJob.progress', progress, true);
+				await this.setStateAsync('currentJob.printName', rawName(filename), true);
+				await this.setStateAsync('currentJob.remainingText', formatHms(remainingSec), true);
+				await this.setStateAsync('currentJob.finishAt', formatFinishAt(remainingSec), true);
+			} else {
+				// Cancelled/complete/standby: Creality often keeps filename + last % — force clear.
+				this.clearCurrentJobLive();
+				if (isJobEnded(state, ui) || state === 'standby') {
+					this.lastFilename = '';
+					this.estimatedTime = 0;
+				}
+			}
 
 			await this.setStateAsync('temp.nozzleTemp', round1(ex.temperature), true);
 			await this.setStateAsync('temp.nozzleTarget', round1(ex.target), true);
