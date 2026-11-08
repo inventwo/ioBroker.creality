@@ -1,8 +1,21 @@
 {
   "common": {
     "name": "creality",
-    "version": "0.5.0",
+    "version": "0.5.1",
     "news": {
+      "0.5.1": {
+        "en": "Added `meta.folder` typing and localized title for adapter/instance namespace.",
+        "de": "Meta-Ordner und lokalisierter Titel für Adapter/Instanz-Namespace hinzugefügt.",
+        "ru": "Добавлена типизация `meta.folder` и локализованный заголовок для пространства имён адаптера/экземпляра.",
+        "pt": "Adicionou a digitação `meta.folder` e o título do namespace adaptador/instância.",
+        "nl": "Typen van `meta.folder` en gelokaliseerde titel toegevoegd voor de naamruimte van de adapter/instance.",
+        "fr": "Ajout de la saisie « meta.folder » et d'un titre localisé pour l'espace de noms Adapter/Instance.",
+        "it": "Aggiunti `meta.folder` e titolo localizzato per namespace adattatore/istanza.",
+        "es": "Se ha añadido el tipo «meta.folder» y el título localizado del adaptor/instancia.",
+        "pl": "Dodano wpisanie `meta.folder` i zlokalizowany tytuł dla przestrzeni nazw adaptera/instancji.",
+        "uk": "Додано введення `meta.folder` та локалізований заголовок для простору імен адаптеру/екземпляра.",
+        "zh-cn": "为适配器/实例命名空间添加了 “meta.folder” 键入和本地化标题。"
+      },
       "0.5.0": {
         "en": "Fixed stale `currentJob.progress` after finished print / Moonraker restart (Creality WS fallback)\nModified Moonraker fan query to be optional so missing fan objects cannot 404 the whole poll\nModified `temp.box` to appear only when the printer reports a chamber heater (`maxBoxTemp > 0`)\nFixed `currentJob.*` not clearing after cancel/complete (Creality keeps filename + last progress)",
         "de": "Behoben: `CurrentJob.Progress` nach Druck/Moonraker-Neustart (Creality WS Fallback)\nMoonraker-Fan-Abfrage ist optional, fehlende Fanobjekte können nicht 404\n`Temp.Box` erscheint nun nur, wenn der Drucker eine Kammerheizung meldet (`MaxBoxTemp > 0`)\nFix: `CurrentJob.*` löscht nach Abbrechen/Abschluss nicht (Creality behält Dateiname und letzten Fortschritt)",
@@ -80,19 +93,6 @@
         "pl": "Stałe role stanu łańcucha dla sprawdzania obiektu repozytorium",
         "uk": "Фіксовані рядові ролі для перевірки репозиторійного об'єкта",
         "zh-cn": "用于仓库对象检查的固定字符串状态角色"
-      },
-      "0.1.3": {
-        "en": "Fixed deploy CI to use Node.js 24\nFixed admin jsonConfig indentation\nModified Dependabot auto-merge to the new ioBroker workflow/action\nModified Dependabot schedule to cron\nModified TypeScript tooling to Node 22\nAdded Cursor rules to the repository",
-        "de": "Fixe Bereitstellungs-CI für Node.js 24\nFixed admin jsonConfig indentation\nModifiziertes Dependabot Auto-Merge zum neuen ioBroker Workflow/Aktion\nModifizierter Dependabot-Zeitplan für cron\nModifizierte TypeScript-Tools für Node 22\nCursorregeln zum Repository hinzugefügt",
-        "ru": "Фиксированное развертывание CI для использования Node.js 24\nОбсуждение admin jsonConfig\nАвтоматическое слияние с новым рабочим процессом / действием ioBroker\nМодифицированное расписание Dependabot\nМодифицированный инструментарий TypeScript для Node 22\nДобавлены правила Cursor в репозиторий",
-        "pt": "Implante fixo CI para usar Node.js 24\nIndentação fixa do administrador jsonConfig\nAuto- fusão de Dependabot modificada para o novo fluxo de trabalho/ação do ioBroker\nProgramação modificada do Dependabot para o cron\nTipo modificadoScript tooling to Node 22\nAdicionadas as regras do cursor ao repositório",
-        "nl": "Vaste inzet CI om Node.js 24 te gebruiken\nVaste admin jsonConfig inspringen\nGemodificeerd Dependabot automatisch samenvoegen naar de nieuwe ioBroker workflow/action\nVeranderde dependabot schema naar cron\nGemodificeerd typeScript gereedschap naar knoop 22\nCursorregels toegevoegd aan de repository",
-        "fr": "CI de déploiement fixe pour utiliser Node.js 24\nCorrection de l'indentation admin jsonConfig\nModification du flux de travail/action de Dependabot\nCalendrier modifié de Dependabot à cron\nModification de l'outil TypeScript vers Node 22\nAjout de règles de curseur au dépôt",
-        "it": "Risolto schieramento CI per usare Node.js 24\nRisolto jsonConfig indentazione\nAutomatizzato Dependabot per il nuovo flusso di lavoro ioBroker/azione\nProgramma di Dependabot modificato per cron\nStrumenti di tipo script modificati a Node 22\nAggiunte regole Cursor al repository",
-        "es": "Implementación fija CI para utilizar Node.js 24\nAdministración fija jsonConfig indentation\nModificado Dependabot auto-merge al nuevo ioBroker flujo de trabajo / acción\nModificado horario Dependabot para cron\nHerramientas de tipoScript modificadas para Nodo 22\nAñadido reglas de cursor al repositorio",
-        "pl": "Stałe uruchomienie CI do korzystania z Node.js 24\nNaprawiono wcięcie admin jsonConfig\nZmodyfikowane automatyczne połączenie Dependabot z nowym obiegiem pracy / działaniem joBrokera\nZmodyfikowany schemat dawkowania leku Dependabot do cron\nZmodyfikowane narzędzie TypeScript do węzła 22\nDodano zasady kursora do repozytorium",
-        "uk": "Виправлено розгортання CI для використання Node.js 24\nВиправлено помилку адміністратора\nМодифікована автозахоплення залежно від нового ioBroker\nМодифікований графік залежно від корони\nМодифікований інструмент TypeScript для Node 22\nДодано правила оформлення до репозиторій",
-        "zh-cn": "使用节点的固定部署 CI 24\n固定管理员json 缩进\n适应新的ioBroker工作流程/行动\n已修改的依附时间表\n修改类型脚本工具到节点 22\n添加光标规则到仓库"
       }
     },
     "titleLang": {

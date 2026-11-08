@@ -1,4 +1,8 @@
 # Older changes
+## 0.2.0 (2026-08-08)
+- (skvarel) Fixed part cooling fan % to match slicer/display (Creality fan0_min remapping)
+- (skvarel) Added `fans.partCoolingPwm` for raw PWM duty cycle
+
 ## 0.1.4 (2026-08-02)
 - (skvarel) Fixed string state roles for repository object check
 
