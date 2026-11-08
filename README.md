@@ -70,8 +70,12 @@ If you like our work and would like to support us, we appreciate any donation.
 ## Changelog
 
 <!--
+	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### **WORK IN PROGRESS**
+- (skvarel) Added `meta.folder` typing and localized title for adapter/instance namespace.
+
 ### 0.5.0 (2026-10-06)
 - (skvarel) Fixed stale `currentJob.progress` after finished print / Moonraker restart (Creality WS fallback)
 - (skvarel) Modified Moonraker fan query to be optional so missing fan objects cannot 404 the whole poll

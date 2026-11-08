@@ -6,6 +6,7 @@
  */
 
 const utils = require('@iobroker/adapter-core');
+const ioPack = require('./io-package.json');
 const { MoonrakerClient } = require('./lib/moonraker');
 const { CrealityWsClient } = require('./lib/crealityWs');
 const {
@@ -60,9 +61,22 @@ class Creality extends utils.Adapter {
 		this.fanMinRefreshAt = 0;
 		/** @type {boolean|null} null = unknown until Creality telem provides maxBoxTemp */
 		this.chamberHasHeater = null;
+		this.systemLanguage = 'en';
 	}
 
 	async onReady() {
+		try {
+			const systemConfig = await this.getForeignObjectAsync('system.config');
+			if (systemConfig?.common?.language) {
+				this.systemLanguage = systemConfig.common.language;
+			}
+		} catch (err) {
+			this.log.debug(`Could not read system language: ${err && err.message ? err.message : String(err)}`);
+		}
+
+		await this.ensureAdapterRootMeta();
+		await this.ensureInstanceMeta();
+
 		const host = String(this.config.host || '').trim();
 		this.printerHost = host;
 		const moonrakerPort = Number(this.config.moonrakerPort) || 7125;
@@ -117,6 +131,67 @@ class Creality extends utils.Adapter {
 
 		await this.poll().catch(err => this.logMoonrakerUnreachable(err));
 		this.scheduleNextPoll();
+	}
+
+	/**
+	 * Ensure the adapter root object (creality) is typed as meta.folder.
+	 * Must be done at runtime — objects with `_id: ""` in io-package.json only cover the instance namespace.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	async ensureAdapterRootMeta() {
+		const rootId = this.name;
+		const titleLang = ioPack.common?.titleLang || {};
+		const lang = this.systemLanguage || 'en';
+		const metaObject = {
+			type: 'meta',
+			common: {
+				name: titleLang[lang] || titleLang.en || rootId,
+				type: 'meta.folder',
+			},
+			native: {},
+		};
+
+		const existing = await this.getForeignObjectAsync(rootId);
+		if (!existing) {
+			await this.setForeignObjectAsync(rootId, metaObject);
+		} else if (existing.type !== 'meta') {
+			await this.extendForeignObjectAsync(rootId, {
+				type: 'meta',
+				common: metaObject.common,
+			});
+		}
+	}
+
+	/**
+	 * Ensure this instance namespace (creality.N) is typed as meta.folder with localized title.
+	 * Fixes existing installs created before the io-package instanceObjects meta entry.
+	 *
+	 * @returns {Promise<void>}
+	 */
+	async ensureInstanceMeta() {
+		const titleLang = ioPack.common?.titleLang || {};
+		const instanceId = this.namespace;
+		const metaCommon = {
+			name: titleLang,
+			type: 'meta.folder',
+		};
+
+		const existing = await this.getForeignObjectAsync(instanceId);
+		if (!existing) {
+			await this.setForeignObjectAsync(instanceId, {
+				type: 'meta',
+				common: metaCommon,
+				native: {},
+			});
+			return;
+		}
+		if (existing.type !== 'meta') {
+			await this.extendForeignObjectAsync(instanceId, {
+				type: 'meta',
+				common: metaCommon,
+			});
+		}
 	}
 
 	/**
